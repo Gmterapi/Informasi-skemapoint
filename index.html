@@ -38,7 +38,8 @@
         header {
             background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
             color: white;
-            padding: 24px 20px;
+            /* PERBAIKAN: Padding bawah diperbesar agar judul tidak menempel menu */
+            padding: 30px 20px 70px 20px; 
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
             box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
@@ -158,7 +159,7 @@
             outline: none;
             transition: border-color 0.2s;
             position: relative;
-            z-index: 10; /* Ensure focus works properly */
+            z-index: 10; 
         }
         .search-box:focus { border-color: var(--color-accent); }
 
@@ -314,6 +315,7 @@
         .nav-item.active { color: var(--color-accent); }
         .nav-item.active .nav-icon { transform: translateY(-2px); }
 
+        /* --- DESKTOP LAYOUT --- */
         @media (min-width: 769px) {
             body { padding-bottom: 0; }
             .bottom-nav { display: none; }
@@ -321,31 +323,40 @@
                 display: flex;
                 justify-content: center;
                 gap: 10px;
-                margin-top: -30px;
-                margin-bottom: 20px;
+                margin-top: -40px; /* Pull up to overlap header */
+                margin-bottom: 30px;
                 position: relative;
-                z-index: 10;
+                z-index: 20; /* Sit on top of header */
+                padding: 0 20px;
             }
             .desktop-btn {
-                padding: 10px 24px;
+                padding: 12px 28px;
                 border-radius: 50px;
                 border: none;
                 background: white;
                 color: var(--color-text-light);
-                font-weight: 600;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+                font-weight: 700;
+                font-size: 14px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
                 cursor: pointer;
                 transition: all 0.3s;
             }
-            .desktop-btn:hover { color: var(--color-accent); transform: translateY(-2px); }
+            .desktop-btn:hover { 
+                color: var(--color-accent); 
+                transform: translateY(-3px); 
+                box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            }
             .desktop-btn.active {
                 background: var(--color-accent);
                 color: white;
+                box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
             }
         }
         @media (max-width: 768px) {
             .desktop-nav { display: none; }
             .app-title { font-size: 18px; }
+            /* Reset padding for mobile since menu is gone */
+            header { padding-bottom: 24px; } 
         }
     </style>
 </head>
@@ -537,13 +548,11 @@
                 m.id.toLowerCase().includes(query)
             );
             memberPage = 1;
-            // Panggil fungsi update data saja, JANGAN render ulang seluruhnya
             updateMemberTableContent(); 
         };
 
         window.changePage = function(delta) {
             memberPage += delta;
-            // Panggil fungsi update data saja
             updateMemberTableContent();
             document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
         };
@@ -597,12 +606,10 @@
             filteredMembers = allMembers;
             memberPage = 1;
 
-            // Generate Layout Only Once
             let html = `
                 <div class="card">
                     <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:10px;">
                         <span class="card-title">💎 Top Member (Global ID)</span>
-                        <!-- Input ID tetap, tidak di-reload saat ketik -->
                         <input type="text" id="memberSearch" class="search-box" placeholder="🔍 Cari Nama atau ID..." onkeyup="window.filterMembers()">
                     </div>
                     
@@ -617,7 +624,6 @@
                                 </tr>
                             </thead>
                             <tbody id="memberTableBody">
-                                <!-- Data akan diinject di sini -->
                             </tbody>
                         </table>
                     </div>
@@ -630,11 +636,9 @@
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
-            // Panggil fungsi update untuk isi data pertama kali
             updateMemberTableContent();
         }
 
-        // FUNGSI BARU: Hanya update isinya, tanpa merusak input
         function updateMemberTableContent() {
             const start = (memberPage - 1) * MEMBERS_PER_PAGE;
             const end = start + MEMBERS_PER_PAGE;
@@ -642,7 +646,6 @@
             const totalMembers = filteredMembers.length;
             const totalPages = Math.ceil(totalMembers / MEMBERS_PER_PAGE);
 
-            // 1. Update Tabel Body
             const tbody = document.getElementById('memberTableBody');
             let rows = '';
             if (pagedData.length === 0) {
@@ -667,7 +670,6 @@
             }
             tbody.innerHTML = rows;
 
-            // 2. Update Pagination Controls
             const pInfo = document.getElementById('memberPageInfo');
             const pDiv = document.getElementById('memberPagination');
             const btnPrev = document.getElementById('memberBtnPrev');
