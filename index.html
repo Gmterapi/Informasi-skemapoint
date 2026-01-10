@@ -104,7 +104,7 @@
 
         th {
             background: #f1f5f9;
-            text-align: left; /* Default alignment */
+            text-align: left;
             padding: 12px 16px;
             font-weight: 700;
             color: var(--color-primary);
@@ -116,7 +116,7 @@
         }
 
         td {
-            padding: 12px 16px; /* Match vertical padding with th for straightness */
+            padding: 12px 16px;
             border-bottom: 1px solid #f1f5f9;
             color: #475569;
             vertical-align: middle;
@@ -125,7 +125,6 @@
         tr:last-child td { border-bottom: none; }
         tr:hover td { background-color: #f8fafc; }
 
-        /* Utility Classes for Alignment */
         .text-center { text-align: center; }
         .text-right { text-align: right; }
 
@@ -158,6 +157,8 @@
             margin-bottom: 10px;
             outline: none;
             transition: border-color 0.2s;
+            position: relative;
+            z-index: 10; /* Ensure focus works properly */
         }
         .search-box:focus { border-color: var(--color-accent); }
 
@@ -490,7 +491,6 @@
         window.searchTreeNode = function() {
             const query = document.getElementById('treeSearch').value.toLowerCase();
 
-            // 1. Collapse EVERYTHING first
             const collapseAll = (list) => {
                 list.forEach(n => {
                     n.expanded = false;
@@ -505,22 +505,17 @@
                 return;
             }
 
-            // 2. Find Match and Expand Path Upwards (Parents only)
             const traverseAndExpandParents = (nodeList, parents = []) => {
                 let found = false;
                 nodeList.forEach(node => {
                     const isMatch = node.name.toLowerCase().includes(query) || node.id.toLowerCase().includes(query);
                     
                     if (isMatch) {
-                        // Highlight found node
                         node.highlight = true;
                         found = true;
-
-                        // Expand ALL parents in the chain
                         parents.forEach(p => p.expanded = true);
                     }
 
-                    // Recurse through children
                     if (node.children) {
                         if (traverseAndExpandParents(node.children, [...parents, node])) {
                             found = true;
@@ -542,12 +537,14 @@
                 m.id.toLowerCase().includes(query)
             );
             memberPage = 1;
-            renderMemberTable();
+            // Panggil fungsi update data saja, JANGAN render ulang seluruhnya
+            updateMemberTableContent(); 
         };
 
         window.changePage = function(delta) {
             memberPage += delta;
-            renderMemberTable();
+            // Panggil fungsi update data saja
+            updateMemberTableContent();
             document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -599,20 +596,13 @@
             const allMembers = Array.from(globalData.membersMap.values()).sort((a, b) => b.points - a.points);
             filteredMembers = allMembers;
             memberPage = 1;
-            renderMemberTable();
-        }
 
-        function renderMemberTable() {
-            const start = (memberPage - 1) * MEMBERS_PER_PAGE;
-            const end = start + MEMBERS_PER_PAGE;
-            const pagedData = filteredMembers.slice(start, end);
-            const totalMembers = filteredMembers.length;
-            const totalPages = Math.ceil(totalMembers / MEMBERS_PER_PAGE);
-
+            // Generate Layout Only Once
             let html = `
                 <div class="card">
                     <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:10px;">
                         <span class="card-title">💎 Top Member (Global ID)</span>
+                        <!-- Input ID tetap, tidak di-reload saat ketik -->
                         <input type="text" id="memberSearch" class="search-box" placeholder="🔍 Cari Nama atau ID..." onkeyup="window.filterMembers()">
                     </div>
                     
@@ -627,10 +617,36 @@
                                 </tr>
                             </thead>
                             <tbody id="memberTableBody">
-            `;
+                                <!-- Data akan diinject di sini -->
+                            </tbody>
+                        </table>
+                    </div>
 
+                    <div class="pagination" id="memberPagination">
+                        <button class="btn-page" id="memberBtnPrev" onclick="window.changePage(-1)">Sebelumnya</button>
+                        <span class="page-info" id="memberPageInfo">Hal 1</span>
+                        <button class="btn-page" id="memberBtnNext" onclick="window.changePage(1)">Selanjutnya</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            // Panggil fungsi update untuk isi data pertama kali
+            updateMemberTableContent();
+        }
+
+        // FUNGSI BARU: Hanya update isinya, tanpa merusak input
+        function updateMemberTableContent() {
+            const start = (memberPage - 1) * MEMBERS_PER_PAGE;
+            const end = start + MEMBERS_PER_PAGE;
+            const pagedData = filteredMembers.slice(start, end);
+            const totalMembers = filteredMembers.length;
+            const totalPages = Math.ceil(totalMembers / MEMBERS_PER_PAGE);
+
+            // 1. Update Tabel Body
+            const tbody = document.getElementById('memberTableBody');
+            let rows = '';
             if (pagedData.length === 0) {
-                html += `<tr><td colspan="4" class="text-center" style="padding:30px; color:#94a3b8;">Tidak ada data ditemukan.</td></tr>`;
+                rows = `<tr><td colspan="4" class="text-center" style="padding:30px; color:#94a3b8;">Tidak ada data ditemukan.</td></tr>`;
             } else {
                 pagedData.forEach((m, idx) => {
                     const globalRank = start + idx + 1;
@@ -639,7 +655,7 @@
                     if (globalRank === 2) rankClass = 'rank-2';
                     if (globalRank === 3) rankClass = 'rank-3';
 
-                    html += `
+                    rows += `
                         <tr>
                             <td class="text-center"><div class="rank-badge ${rankClass}" style="width:24px; height:24px; font-size:11px;">${globalRank}</div></td>
                             <td><strong>${m.name}</strong></td>
@@ -649,34 +665,34 @@
                     `;
                 });
             }
+            tbody.innerHTML = rows;
 
-            html += `</tbody></table></div>`;
+            // 2. Update Pagination Controls
+            const pInfo = document.getElementById('memberPageInfo');
+            const pDiv = document.getElementById('memberPagination');
+            const btnPrev = document.getElementById('memberBtnPrev');
+            const btnNext = document.getElementById('memberBtnNext');
 
-            if (totalPages > 1) {
-                html += `
-                    <div class="pagination">
-                        <button class="btn-page" onclick="window.changePage(-1)" ${memberPage === 1 ? 'disabled' : ''}>Sebelumnya</button>
-                        <span class="page-info">Hal ${memberPage} dari ${totalPages}</span>
-                        <button class="btn-page" onclick="window.changePage(1)" ${memberPage === totalPages ? 'disabled' : ''}>Selanjutnya</button>
-                    </div>
-                `;
+            if (totalPages <= 1) {
+                pDiv.style.display = 'none';
+            } else {
+                pDiv.style.display = 'flex';
+                if(pInfo) pInfo.textContent = `Hal ${memberPage} dari ${totalPages}`;
+                if(btnPrev) btnPrev.disabled = (memberPage === 1);
+                if(btnNext) btnNext.disabled = (memberPage === totalPages);
             }
-
-            html += `</div>`;
-            document.getElementById('mainContent').innerHTML = html;
         }
 
         function renderNetworkTree() {
             const nodes = new Map();
             
-            // Prepare Data
             globalData.membersMap.forEach(m => {
                 nodes.set(m.id, {
                     id: m.id,
                     name: m.name,
                     points: m.points,
                     children: [],
-                    expanded: false, // Default Collapsed
+                    expanded: false,
                     highlight: false
                 });
             });
@@ -698,7 +714,7 @@
             nodes.forEach(node => {
                 if (!childIds.has(node.id)) {
                     roots.push(node);
-                    node.expanded = true; // Expand roots by default so tree isn't empty initially
+                    node.expanded = true;
                 }
             });
 
