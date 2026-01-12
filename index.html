@@ -38,7 +38,6 @@
         header {
             background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
             color: white;
-            /* PERBAIKAN: Padding bawah diperbesar agar judul tidak menempel menu */
             padding: 30px 20px 70px 20px; 
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
@@ -81,72 +80,26 @@
             margin-bottom: 20px;
             border: 1px solid white;
             overflow: hidden;
+            animation: fadeIn 0.3s ease-out;
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .card-header {
             padding: 16px;
             background: #f8fafc;
             border-bottom: 1px solid var(--color-border);
+        }
+
+        .card-title { font-size: 16px; font-weight: 700; color: var(--color-primary); margin-bottom: 10px; display:block; }
+
+        /* Search & Action Area */
+        .search-container {
+            padding: 20px;
+            background: #f8fafc;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
         }
-
-        .card-title { font-size: 16px; font-weight: 700; color: var(--color-primary); }
-
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            min-width: 500px;
-        }
-
-        th {
-            background: #f1f5f9;
-            text-align: left;
-            padding: 12px 16px;
-            font-weight: 700;
-            color: var(--color-primary);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid var(--color-border);
-            vertical-align: middle;
-        }
-
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #475569;
-            vertical-align: middle;
-        }
-
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background-color: #f8fafc; }
-
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-
-        .rank-badge {
-            width: 32px;
-            height: 32px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-weight: 800;
-            font-size: 13px;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .rank-1 { background: linear-gradient(135deg, #fbbf24, #d97706); }
-        .rank-2 { background: linear-gradient(135deg, #e2e8f0, #94a3b8); }
-        .rank-3 { background: linear-gradient(135deg, #fed7aa, #ea580c); }
-        .rank-other { background: #e2e8f0; color: #64748b; }
-
-        .score-val { font-weight: 700; color: var(--color-accent); font-size: 14px; }
 
         .search-box {
             width: 100%;
@@ -155,38 +108,75 @@
             border-radius: 10px;
             font-size: 14px;
             background: white;
-            margin-bottom: 10px;
             outline: none;
             transition: border-color 0.2s;
-            position: relative;
-            z-index: 10; 
         }
         .search-box:focus { border-color: var(--color-accent); }
 
-        .pagination {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            background: #f8fafc;
-            border-top: 1px solid var(--color-border);
-        }
-
-        .btn-page {
-            background: white;
-            border: 1px solid var(--color-border);
-            padding: 8px 20px;
-            border-radius: 20px;
-            color: var(--color-primary);
+        .btn-primary {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
         }
-        .btn-page:active { transform: scale(0.95); background: var(--color-bg); }
-        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-primary:active { transform: scale(0.98); }
 
-        .page-info { font-size: 13px; font-weight: 600; color: var(--color-text-light); }
+        /* Result Area Styles */
+        .result-summary {
+            padding: 30px 20px;
+            text-align: center;
+            background: #eff6ff;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .result-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--color-primary);
+            margin-bottom: 5px;
+        }
+
+        .result-id {
+            font-size: 13px;
+            color: var(--color-text-light);
+            margin-bottom: 15px;
+            font-family: monospace;
+            background: rgba(255,255,255,0.5);
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .result-score-badge {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 4px solid var(--color-accent);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: var(--color-primary);
+        }
+
+        .result-score-val { font-size: 24px; font-weight: 800; line-height: 1; }
+        .result-score-label { font-size: 10px; text-transform: uppercase; font-weight: 700; margin-top: 2px; }
+
+        .empty-state {
+            padding: 30px;
+            text-align: center;
+            color: var(--color-text-light);
+            font-size: 14px;
+        }
 
         /* --- TREE VIEW --- */
         .tree-container {
@@ -194,6 +184,7 @@
             overflow: auto;
             background: #ffffff;
             min-height: 300px;
+            text-align: center;
         }
 
         .tree ul {
@@ -202,7 +193,7 @@
             transition: all 0.5s;
             display: flex;
             justify-content: center;
-            padding-left: 20px;
+            padding-left: 0;
         }
 
         .tree li {
@@ -323,10 +314,10 @@
                 display: flex;
                 justify-content: center;
                 gap: 10px;
-                margin-top: -40px; /* Pull up to overlap header */
+                margin-top: -40px; 
                 margin-bottom: 30px;
                 position: relative;
-                z-index: 20; /* Sit on top of header */
+                z-index: 20; 
                 padding: 0 20px;
             }
             .desktop-btn {
@@ -355,7 +346,6 @@
         @media (max-width: 768px) {
             .desktop-nav { display: none; }
             .app-title { font-size: 18px; }
-            /* Reset padding for mobile since menu is gone */
             header { padding-bottom: 24px; } 
         }
     </style>
@@ -367,8 +357,8 @@
     </header>
 
     <div class="desktop-nav">
-        <button class="desktop-btn active" id="btn-d-stokis" onclick="window.switchTab('stokis')">🏆 Ranking Stokis</button>
-        <button class="desktop-btn" id="btn-d-member" onclick="window.switchTab('member')">💎 Top Member</button>
+        <button class="desktop-btn active" id="btn-d-stokis" onclick="window.switchTab('stokis')">🏆 Point Stokis</button>
+        <button class="desktop-btn" id="btn-d-member" onclick="window.switchTab('member')">💎 Point Member</button>
         <button class="desktop-btn" id="btn-d-tree" onclick="window.switchTab('tree')">🌳 Pohon Jaringan</button>
     </div>
 
@@ -382,15 +372,15 @@
     <nav class="bottom-nav">
         <button class="nav-item active" id="btn-m-stokis" onclick="window.switchTab('stokis')">
             <span class="nav-icon">🏆</span>
-            <span>Stokis</span>
+            <span>Point Stokis</span>
         </button>
         <button class="nav-item" id="btn-m-member" onclick="window.switchTab('member')">
             <span class="nav-icon">💎</span>
-            <span>Member</span>
+            <span>Point Member</span>
         </button>
         <button class="nav-item" id="btn-m-tree" onclick="window.switchTab('tree')">
             <span class="nav-icon">🌳</span>
-            <span>Jaringan</span>
+            <span>Pohon Jaringan</span>
         </button>
     </nav>
 
@@ -414,9 +404,6 @@
 
         let globalData = null;
         let treeState = { nodes: [] };
-        let filteredMembers = [];
-        let memberPage = 1;
-        const MEMBERS_PER_PAGE = 10;
 
         // --- GLOBAL HELPER FUNCTIONS ---
         window.processGlobalData = function(snapshot) {
@@ -480,8 +467,8 @@
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            if (tabName === 'stokis') renderStokisRanking();
-            if (tabName === 'member') renderMemberRanking();
+            if (tabName === 'stokis') renderStokisSearch();
+            if (tabName === 'member') renderMemberSearch();
             if (tabName === 'tree') renderNetworkTree();
         };
 
@@ -499,247 +486,156 @@
             renderTreeHTML();
         };
 
-        window.searchTreeNode = function() {
-            const query = document.getElementById('treeSearch').value.toLowerCase();
-
-            const collapseAll = (list) => {
-                list.forEach(n => {
-                    n.expanded = false;
-                    n.highlight = false;
-                    if(n.children) collapseAll(n.children);
-                });
-            };
-            collapseAll(treeState.nodes);
-
-            if (!query) {
-                renderTreeHTML();
-                return;
-            }
-
-            const traverseAndExpandParents = (nodeList, parents = []) => {
-                let found = false;
-                nodeList.forEach(node => {
-                    const isMatch = node.name.toLowerCase().includes(query) || node.id.toLowerCase().includes(query);
-                    
-                    if (isMatch) {
-                        node.highlight = true;
-                        found = true;
-                        parents.forEach(p => p.expanded = true);
-                    }
-
-                    if (node.children) {
-                        if (traverseAndExpandParents(node.children, [...parents, node])) {
-                            found = true;
-                        }
-                    }
-                });
-                return found;
-            };
-
-            traverseAndExpandParents(treeState.nodes);
-            renderTreeHTML();
-        };
-
-        window.filterMembers = function() {
-            const query = document.getElementById('memberSearch').value.toLowerCase();
-            const allMembers = Array.from(globalData.membersMap.values());
-            filteredMembers = allMembers.filter(m => 
-                m.name.toLowerCase().includes(query) || 
-                m.id.toLowerCase().includes(query)
-            );
-            memberPage = 1;
-            updateMemberTableContent(); 
-        };
-
-        window.changePage = function(delta) {
-            memberPage += delta;
-            updateMemberTableContent();
-            document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
-        };
-
         // --- RENDER FUNCTIONS ---
 
-        function renderStokisRanking() {
-            const sortedStokis = [...globalData.stokisList].sort((a, b) => b.salesPoints - a.salesPoints);
-
+        // 1. POINT STOKIS
+        function renderStokisSearch() {
             let html = `
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">🏆 Ranking Stokis</span>
-                        <span class="badge" style="background:#dbeafe; color:#1e40af; padding:4px 8px; border-radius:4px; font-size:11px;">Total: ${sortedStokis.length}</span>
+                        <span class="card-title">🏆 Point Stokis</span>
                     </div>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="text-center" width="50">Rank</th>
-                                    <th>Nama Stokis</th>
-                                    <th class="text-center">Member</th>
-                                    <th class="text-right">Omset Point</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-            `;
-
-            sortedStokis.forEach((s, idx) => {
-                let rankClass = 'rank-other';
-                if (idx === 0) rankClass = 'rank-1';
-                if (idx === 1) rankClass = 'rank-2';
-                if (idx === 2) rankClass = 'rank-3';
-
-                html += `
-                    <tr>
-                        <td class="text-center"><div class="rank-badge ${rankClass}">${idx + 1}</div></td>
-                        <td><strong>${s.name}</strong></td>
-                        <td class="text-center">${s.memberCount}</td>
-                        <td class="text-right score-val">${s.salesPoints.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table></div></div>`;
-            document.getElementById('mainContent').innerHTML = html;
-        }
-
-        function renderMemberRanking() {
-            const allMembers = Array.from(globalData.membersMap.values()).sort((a, b) => b.points - a.points);
-            filteredMembers = allMembers;
-            memberPage = 1;
-
-            let html = `
-                <div class="card">
-                    <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:10px;">
-                        <span class="card-title">💎 Top Member (Global ID)</span>
-                        <input type="text" id="memberSearch" class="search-box" placeholder="🔍 Cari Nama atau ID..." onkeyup="window.filterMembers()">
+                    <div class="search-container">
+                        <input type="text" id="inputStokisName" class="search-box" placeholder="Ketik Nama Stokis...">
+                        <button class="btn-primary" onclick="window.handleSearchStokis()">Cari Stokis</button>
                     </div>
-                    
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="text-center" width="50">R</th>
-                                    <th>Nama Member</th>
-                                    <th>ID</th>
-                                    <th class="text-right">Poin</th>
-                                </tr>
-                            </thead>
-                            <tbody id="memberTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="pagination" id="memberPagination">
-                        <button class="btn-page" id="memberBtnPrev" onclick="window.changePage(-1)">Sebelumnya</button>
-                        <span class="page-info" id="memberPageInfo">Hal 1</span>
-                        <button class="btn-page" id="memberBtnNext" onclick="window.changePage(1)">Selanjutnya</button>
-                    </div>
+                    <div id="stokisResultArea"></div>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
-            updateMemberTableContent();
         }
 
-        function updateMemberTableContent() {
-            const start = (memberPage - 1) * MEMBERS_PER_PAGE;
-            const end = start + MEMBERS_PER_PAGE;
-            const pagedData = filteredMembers.slice(start, end);
-            const totalMembers = filteredMembers.length;
-            const totalPages = Math.ceil(totalMembers / MEMBERS_PER_PAGE);
-
-            const tbody = document.getElementById('memberTableBody');
-            let rows = '';
-            if (pagedData.length === 0) {
-                rows = `<tr><td colspan="4" class="text-center" style="padding:30px; color:#94a3b8;">Tidak ada data ditemukan.</td></tr>`;
-            } else {
-                pagedData.forEach((m, idx) => {
-                    const globalRank = start + idx + 1;
-                    let rankClass = 'rank-other';
-                    if (globalRank === 1) rankClass = 'rank-1';
-                    if (globalRank === 2) rankClass = 'rank-2';
-                    if (globalRank === 3) rankClass = 'rank-3';
-
-                    rows += `
-                        <tr>
-                            <td class="text-center"><div class="rank-badge ${rankClass}" style="width:24px; height:24px; font-size:11px;">${globalRank}</div></td>
-                            <td><strong>${m.name}</strong></td>
-                            <td style="font-family:monospace; color:#64748b; font-size:11px;">${m.id}</td>
-                            <td class="text-right score-val">${parseFloat(m.points).toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
-            }
-            tbody.innerHTML = rows;
-
-            const pInfo = document.getElementById('memberPageInfo');
-            const pDiv = document.getElementById('memberPagination');
-            const btnPrev = document.getElementById('memberBtnPrev');
-            const btnNext = document.getElementById('memberBtnNext');
-
-            if (totalPages <= 1) {
-                pDiv.style.display = 'none';
-            } else {
-                pDiv.style.display = 'flex';
-                if(pInfo) pInfo.textContent = `Hal ${memberPage} dari ${totalPages}`;
-                if(btnPrev) btnPrev.disabled = (memberPage === 1);
-                if(btnNext) btnNext.disabled = (memberPage === totalPages);
-            }
-        }
-
-        function renderNetworkTree() {
-            const nodes = new Map();
+        window.handleSearchStokis = function() {
+            const query = document.getElementById('inputStokisName').value.toLowerCase().trim();
+            const resultArea = document.getElementById('stokisResultArea');
             
-            globalData.membersMap.forEach(m => {
-                nodes.set(m.id, {
-                    id: m.id,
-                    name: m.name,
-                    points: m.points,
-                    children: [],
-                    expanded: false,
-                    highlight: false
-                });
-            });
+            if (!query) {
+                resultArea.innerHTML = `<div class="empty-state">Silakan masukkan nama stokis.</div>`;
+                return;
+            }
 
-            const roots = [];
-            const childIds = new Set();
+            const found = globalData.stokisList.find(s => s.name.toLowerCase().includes(query));
 
-            globalData.membersMap.forEach(m => {
-                const node = nodes.get(m.id);
-                if (m.upline && nodes.has(m.upline)) {
-                    const parent = nodes.get(m.upline);
-                    if (!parent.children.includes(node)) {
-                        parent.children.push(node);
-                    }
-                    childIds.add(m.id);
-                }
-            });
+            if (found) {
+                resultArea.innerHTML = `
+                    <div class="result-summary">
+                        <div class="result-name">${found.name}</div>
+                        <div class="result-id">${found.id}</div>
+                        <div class="result-score-badge">
+                            <div class="result-score-val">${found.salesPoints.toFixed(0)}</div>
+                            <div class="result-score-label">Omset Point</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultArea.innerHTML = `<div class="empty-state">Stokis dengan nama "<strong>${query}</strong>" tidak ditemukan.</div>`;
+            }
+        };
 
-            nodes.forEach(node => {
-                if (!childIds.has(node.id)) {
-                    roots.push(node);
-                    node.expanded = true;
-                }
-            });
-
-            treeState.nodes = roots;
-
+        // 2. POINT MEMBER
+        function renderMemberSearch() {
             let html = `
                 <div class="card">
-                    <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:10px;">
-                        <span class="card-title">🌳 Pohon Jaringan</span>
-                        <input type="text" id="treeSearch" class="search-box" placeholder="🔍 Cari Nama / ID..." onkeyup="window.searchTreeNode()">
+                    <div class="card-header">
+                        <span class="card-title">💎 Point Member</span>
                     </div>
-                    <div class="tree-container tree">
-                        <div id="treeRoot"></div>
+                    <div class="search-container">
+                        <input type="text" id="inputMemberID" class="search-box" placeholder="Ketik ID Member...">
+                        <button class="btn-primary" onclick="window.handleSearchMember()">Cari Member</button>
+                    </div>
+                    <div id="memberResultArea"></div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        window.handleSearchMember = function() {
+            const query = document.getElementById('inputMemberID').value.toLowerCase().trim();
+            const resultArea = document.getElementById('memberResultArea');
+
+            if (!query) {
+                resultArea.innerHTML = `<div class="empty-state">Silakan masukkan ID member.</div>`;
+                return;
+            }
+
+            // Search using Array.from on Map values
+            const allMembers = Array.from(globalData.membersMap.values());
+            const found = allMembers.find(m => m.id.toLowerCase().includes(query));
+
+            if (found) {
+                resultArea.innerHTML = `
+                    <div class="result-summary">
+                        <div class="result-name">${found.name}</div>
+                        <div class="result-id">${found.id}</div>
+                        <div class="result-score-badge" style="border-color: var(--color-primary);">
+                            <div class="result-score-val" style="color:var(--color-primary)">${found.points.toFixed(0)}</div>
+                            <div class="result-score-label">Total Point</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultArea.innerHTML = `<div class="empty-state">Member dengan ID "<strong>${query}</strong>" tidak ditemukan.</div>`;
+            }
+        };
+
+        // 3. POHON JARINGAN
+        function renderNetworkTree() {
+            let html = `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🌳 Pohon Jaringan</span>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="inputTreeSearch" class="search-box" placeholder="Ketik Nama / ID Member...">
+                        <button class="btn-primary" onclick="window.handleSearchTree()">Cari Jaringan</button>
+                    </div>
+                    <div class="tree-container tree" id="treeContainer">
+                         <div class="empty-state" style="padding: 50px;">Silakan cari member untuk melihat jaringan ke bawah.</div>
                     </div>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
-            renderTreeHTML();
         }
+
+        window.handleSearchTree = function() {
+            const query = document.getElementById('inputTreeSearch').value.toLowerCase().trim();
+            const container = document.getElementById('treeContainer');
+
+            if (!query) return;
+
+            // Find the member
+            const allMembers = Array.from(globalData.membersMap.values());
+            const foundMember = allMembers.find(m => 
+                m.name.toLowerCase().includes(query) || 
+                m.id.toLowerCase().includes(query)
+            );
+
+            if (foundMember) {
+                // Build sub-tree structure starting from foundMember
+                // We need to recursively find children
+                const buildSubTree = (rootMember) => {
+                    const children = allMembers.filter(m => m.upline === rootMember.id);
+                    return {
+                        ...rootMember,
+                        children: children.map(child => buildSubTree(child)),
+                        expanded: true, // Auto expand root
+                        highlight: true // Highlight root
+                    };
+                };
+
+                const rootNode = buildSubTree(foundMember);
+                treeState.nodes = [rootNode];
+                
+                renderTreeHTML();
+            } else {
+                container.innerHTML = `<div class="empty-state">Data "<strong>${query}</strong>" tidak ditemukan.</div>`;
+                treeState.nodes = [];
+            }
+        };
 
         function renderTreeHTML() {
-            const container = document.getElementById('treeRoot');
-            if (!container) return;
+            const container = document.getElementById('treeContainer');
+            if (!container || treeState.nodes.length === 0) return;
 
             const buildTreeHtml = (nodeList) => {
                 if (!nodeList || nodeList.length === 0) return '';
