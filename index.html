@@ -193,25 +193,6 @@
             text-align: right;
             line-height: 1.4;
         }
-        .edit-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            font-size: 14px;
-            color: var(--color-text);
-            text-align: right;
-            outline: none;
-            margin-top: 5px;
-        }
-        .edit-input:focus {
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
-        }
-        .edit-textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
         .readonly-value {
             background: #f1f5f9;
             padding: 8px 12px;
@@ -219,42 +200,6 @@
             display: inline-block;
             min-width: 120px;
             text-align: right;
-        }
-        .btn-action {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-        .btn-edit {
-            background: white;
-            border: 1px solid var(--color-border);
-            color: var(--color-primary);
-        }
-        .btn-edit:hover {
-            background: #f8fafc;
-            border-color: var(--color-accent);
-        }
-        .btn-save {
-            background: var(--color-accent);
-            color: white;
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-        }
-        .btn-save:hover { background: #1d4ed8; }
-        .btn-cancel {
-            background: #ef4444;
-            color: white;
-            margin-top: 10px;
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
         }
 
         /* Result Styling for Member Point */
@@ -522,6 +467,22 @@
             margin-bottom: 10px;
         }
 
+        /* --- SETTINGS TAB STYLES --- */
+        .settings-container {
+            padding: 20px;
+        }
+        .settings-desc {
+            font-size: 13px;
+            color: var(--color-text-light);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .settings-divider {
+            border: 0;
+            border-top: 1px dashed var(--color-border);
+            margin: 30px 0;
+        }
+
         /* --- NAVIGATION --- */
         .bottom-nav {
             position: fixed;
@@ -637,6 +598,7 @@
         <button class="desktop-btn" id="btn-d-member" onclick="window.switchTab('member')">⭐ Point Saya</button>
         <button class="desktop-btn" id="btn-d-tree" onclick="window.switchTab('tree')">🌳 Jaringan</button>
         <button class="desktop-btn" id="btn-d-info" onclick="window.switchTab('info')">📢 Informasi</button>
+        <button class="desktop-btn" id="btn-d-settings" onclick="window.switchTab('settings')">⚙️ Pengaturan</button>
     </div>
 
     <main id="mainContent">
@@ -664,11 +626,15 @@
             <span class="nav-icon">📢</span>
             <span>Info</span>
         </button>
+        <button class="nav-item" id="btn-m-settings" onclick="window.switchTab('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Pengaturan</span>
+        </button>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA7i0bGhjKHZ788Ir7xTDFM0LXAevnWKsI",
@@ -686,7 +652,7 @@
         const COLLECTION_STOKIS = "stokisDatas";
         const COLLECTION_AUTH = "memberAuth";
         const COLLECTION_PROFILES = "memberProfiles";
-        const COLLECTION_INFO = "memberAnnouncements"; // DIUBAH - sesuai dengan super admin!
+        const COLLECTION_INFO = "memberAnnouncements";
 
         let globalData = null;
         let currentUser = null;
@@ -863,6 +829,7 @@
             if (tabName === 'member') renderMemberView();
             if (tabName === 'tree') renderNetworkTree();
             if (tabName === 'info') renderInfoTab();
+            if (tabName === 'settings') renderSettingsTab();
         };
 
         window.toggleNode = function(id) {
@@ -879,8 +846,7 @@
             renderTreeHTML();
         };
 
-        /* 1. PROFIL MEMBER */
-        let isEditingProfile = false;
+        /* 1. PROFIL MEMBER (READ ONLY) */
         async function renderProfile() {
             if (!currentUser || !globalData) return;
             const main = document.getElementById('mainContent');
@@ -888,7 +854,6 @@
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">📋 Profil Member</span>
-                        <div id="profileActions"></div>
                     </div>
                     <div class="profile-container" id="profileContent">
                         <div style="text-align:center; padding:20px">Memuat data profil...</div>
@@ -909,116 +874,29 @@
                     profileData = profileSnap.data();
                     if (typeof profileData.coords === 'undefined') profileData.coords = '';
                 }
-                renderProfileHTML(currentUser.name, currentUser.id, profileData);
+                
+                // Render read-only HTML
+                const container = document.getElementById('profileContent');
+                let html = '';
+                html += `<div class="profile-row"><span class="label">Nama Member</span><span class="value readonly-value">${currentUser.name}</span></div>`;
+                html += `<div class="profile-row"><span class="label">ID Member</span><span class="value readonly-value">${currentUser.id}</span></div>`;
+                html += '<hr style="border:0; border-top:1px dashed #e2e8f0; margin:20px 0">';
+                html += `<div class="profile-row"><span class="label">Koordinat</span><span class="value">${profileData.coords || '-'}</span></div>`;
+                html += `<div class="profile-row"><span class="label">Level Keahlian</span><span class="value">${profileData.level}</span></div>`;
+                html += `<div class="profile-row"><span class="label">No HP Member</span><span class="value">${profileData.phone || '-'}</span></div>`;
+                html += `<div class="profile-row"><span class="label">Alamat Member</span><span class="value">${profileData.address || '-'}</span></div>`;
+                
+                html += `<div style="text-align:center; margin-top:20px; font-size:12px; color:var(--color-text-light)">
+                    Untuk mengubah data profil, silakan ke menu <strong>Pengaturan</strong>.
+                </div>`;
+
+                container.innerHTML = html;
+
             } catch (error) {
                 console.error("Error loading profile:", error);
                 document.getElementById('profileContent').innerHTML = '<p style="color:red; text-align:center">Gagal memuat profil.</p>';
             }
         }
-
-        function renderProfileHTML(name, id, pData) {
-            const container = document.getElementById('profileContent');
-            const actionsContainer = document.getElementById('profileActions');
-
-            const rowHtml = (label, value, isReadonly = false, type = 'text') => {
-                if (isEditingProfile && !isReadonly) {
-                    if (type === 'select') {
-                        const options = ['Basic', 'Advance', 'Professional', 'Master', 'Instruktur'].map(opt => 
-                            `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`).join('');
-                        return `<div class="profile-row" style="flex-direction:column; align-items:flex-start">
-                            <span class="label">${label}</span>
-                            <select class="edit-input" id="input${label.replace(/\s/g, '')}">${options}</select>
-                        </div>`;
-                    } else if (type === 'textarea') {
-                        return `<div class="profile-row" style="flex-direction:column; align-items:flex-start">
-                            <span class="label">${label}</span>
-                            <textarea class="edit-input edit-textarea" id="input${label.replace(/\s/g, '')}" placeholder="Isi ${label}...">${value}</textarea>
-                        </div>`;
-                    } else {
-                        return `<div class="profile-row" style="flex-direction:column; align-items:flex-start">
-                            <span class="label">${label}</span>
-                            <input type="${type}" class="edit-input" id="input${label.replace(/\s/g, '')}" value="${value}" placeholder="Contoh: -6.200000, 106.816666">
-                        </div>`;
-                    }
-                } else {
-                    return `<div class="profile-row">
-                        <span class="label">${label}</span>
-                        <span class="value ${isReadonly ? 'readonly-value' : ''}">${value || '-'}</span>
-                    </div>`;
-                }
-            };
-
-            let html = '';
-            html += rowHtml('Nama Member', name, true);
-            html += rowHtml('ID Member', id, true);
-            html += '<hr style="border:0; border-top:1px dashed #e2e8f0; margin:20px 0">';
-            html += rowHtml('Koordinat', pData.coords, false, 'text');
-            html += rowHtml('Level Keahlian', pData.level, false, 'select');
-            html += rowHtml('No HP Member', pData.phone, false, 'tel');
-            html += rowHtml('Alamat Member', pData.address, false, 'textarea');
-
-            let btnHtml = '';
-            if (isEditingProfile) {
-                btnHtml = `<div style="margin-top:20px">
-                    <button class="btn-action btn-save" onclick="window.saveProfile()">SIMPAN PERUBAHAN</button>
-                    <button class="btn-action btn-cancel" onclick="window.cancelEditProfile()">BATAL</button>
-                </div>`;
-            } else {
-                btnHtml = '<button class="btn-action btn-edit" onclick="window.enableEditProfile()">Edit Profil</button>';
-            }
-
-            container.innerHTML = html + btnHtml;
-            actionsContainer.innerHTML = isEditingProfile ? '<span style="font-size:12px; color:var(--color-accent); font-weight:bold">Mode Edit</span>' : '';
-        }
-
-        window.enableEditProfile = function() {
-            isEditingProfile = true;
-            renderProfile();
-        };
-
-        window.cancelEditProfile = function() {
-            isEditingProfile = false;
-            renderProfile();
-        };
-
-        window.saveProfile = async function() {
-            const coords = document.getElementById('inputKoordinat').value;
-            const level = document.getElementById('inputLevelKeahlian').value;
-            const phone = document.getElementById('inputNoHPMember').value;
-            const address = document.getElementById('inputAlamatMember').value;
-
-            const btn = document.querySelector('.btn-save');
-            const originalText = btn.textContent;
-            btn.textContent = 'Menyimpan...';
-            btn.disabled = true;
-
-            try {
-                await setDoc(doc(db, COLLECTION_PROFILES, currentUser.id), {
-                    coords: coords,
-                    level: level,
-                    phone: phone,
-                    address: address,
-                    updatedAt: new Date()
-                }, { merge: true });
-
-                isEditingProfile = false;
-                renderProfile();
-
-                const title = document.querySelector('.card-title');
-                const originalTitle = title.textContent;
-                title.textContent = '✅ Data Berhasil Disimpan!';
-                title.style.color = '#16a34a';
-                setTimeout(() => {
-                    title.textContent = originalTitle;
-                    title.style.color = '';
-                }, 2000);
-            } catch (error) {
-                console.error(error);
-                alert('Gagal menyimpan data: ' + error.message);
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        };
 
         /* 2. POINT MEMBER */
         function renderMemberView() {
@@ -1045,7 +923,7 @@
             document.getElementById('mainContent').innerHTML = html;
         }
 
-        /* 3. POHON JARINGAN */
+        /* 3. POHON JARINGAN (COLLAPSED BY DEFAULT) */
         function renderNetworkTree() {
             if (!currentUser || !globalData) return;
             const userData = globalData.membersMap.get(currentUser.id);
@@ -1056,7 +934,7 @@
                 return {
                     ...rootMember,
                     children: children.map(child => buildSubTree(child)),
-                    expanded: true,
+                    expanded: false, // DIUBAH: false agar collapsed saat awal
                     highlight: true
                 };
             };
@@ -1131,7 +1009,6 @@
                 return;
             }
 
-            // Urutkan berdasarkan tanggal terbaru
             const sortedData = [...infoBoardData].sort((a, b) => {
                 const dateA = a.createdAt ? new Date(a.createdAt.toDate()) : new Date(0);
                 const dateB = b.createdAt ? new Date(b.createdAt.toDate()) : new Date(0);
@@ -1154,7 +1031,6 @@
                         <div class="info-item-content">${item.content || ''}</div>
                 `;
 
-                // Tampilkan file jika ada
                 if (item.fileUrl && item.fileName) {
                     const fileTypeDisplay = item.fileType ? item.fileType.toUpperCase() : 'FILE';
                     html += `
@@ -1178,6 +1054,196 @@
             container.innerHTML = html;
         }
 
+        /* 5. TAB PENGATURAN (PROFILE & PASSWORD) */
+        async function renderSettingsTab() {
+            if (!currentUser) return;
+            const main = document.getElementById('mainContent');
+
+            // Fetch profile data first
+            let profileData = {
+                level: 'Basic',
+                phone: '',
+                address: '',
+                coords: ''
+            };
+            try {
+                const profileRef = doc(db, COLLECTION_PROFILES, currentUser.id);
+                const profileSnap = await getDoc(profileRef);
+                if (profileSnap.exists()) {
+                    profileData = profileSnap.data();
+                    if (typeof profileData.coords === 'undefined') profileData.coords = '';
+                }
+            } catch (error) {
+                console.error("Error fetching profile for settings:", error);
+            }
+
+            main.innerHTML = `
+                <!-- CARD 1: EDIT PROFIL -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">👤 Ubah Data Profil</span>
+                    </div>
+                    <div class="settings-container">
+                        <p class="settings-desc">Perbarui informasi diri Anda di bawah ini.</p>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label class="label">Koordinat</label>
+                            <input type="text" id="setCoords" class="auth-input" value="${profileData.coords || ''}" placeholder="Contoh: -6.200000, 106.816666">
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label class="label">Level Keahlian</label>
+                            <select id="setLevel" class="auth-input">
+                                <option value="Basic" ${profileData.level === 'Basic' ? 'selected' : ''}>Basic</option>
+                                <option value="Advance" ${profileData.level === 'Advance' ? 'selected' : ''}>Advance</option>
+                                <option value="Professional" ${profileData.level === 'Professional' ? 'selected' : ''}>Professional</option>
+                                <option value="Master" ${profileData.level === 'Master' ? 'selected' : ''}>Master</option>
+                                <option value="Instruktur" ${profileData.level === 'Instruktur' ? 'selected' : ''}>Instruktur</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label class="label">No HP Member</label>
+                            <input type="tel" id="setPhone" class="auth-input" value="${profileData.phone || ''}" placeholder="0812...">
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label class="label">Alamat Member</label>
+                            <textarea id="setAddress" class="auth-input" style="min-height:80px; resize:vertical" placeholder="Alamat lengkap...">${profileData.address || ''}</textarea>
+                        </div>
+
+                        <div id="setProfileMsg" class="auth-msg" style="text-align:center; margin-bottom:15px"></div>
+                        <button class="btn-auth" onclick="window.saveSettingsProfile()">SIMPAN PERUBAHAN PROFIL</button>
+                    </div>
+                </div>
+
+                <div class="settings-divider"></div>
+
+                <!-- CARD 2: PASSWORD -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🔒 Keamanan Akun</span>
+                    </div>
+                    <div class="settings-container">
+                        <p class="settings-desc">Ganti password untuk keamanan akun Anda.</p>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label class="label">Password Lama</label>
+                            <input type="password" id="setOldPass" class="auth-input" placeholder="Masukkan password saat ini">
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label class="label">Password Baru</label>
+                            <input type="password" id="setNewPass" class="auth-input" placeholder="Masukkan password baru">
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label class="label">Konfirmasi Password Baru</label>
+                            <input type="password" id="setConfirmPass" class="auth-input" placeholder="Ulangi password baru">
+                        </div>
+
+                        <div id="setPassMsg" class="auth-msg" style="text-align:center; margin-bottom:15px"></div>
+
+                        <button id="btnUpdatePass" class="btn-auth" onclick="window.changePassword()">GANTI PASSWORD</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.saveSettingsProfile = async function() {
+            const coords = document.getElementById('setCoords').value;
+            const level = document.getElementById('setLevel').value;
+            const phone = document.getElementById('setPhone').value;
+            const address = document.getElementById('setAddress').value;
+            const msg = document.getElementById('setProfileMsg');
+
+            msg.className = 'auth-msg';
+            msg.textContent = '';
+
+            try {
+                await setDoc(doc(db, COLLECTION_PROFILES, currentUser.id), {
+                    coords: coords,
+                    level: level,
+                    phone: phone,
+                    address: address,
+                    updatedAt: new Date()
+                }, { merge: true });
+
+                msg.className = 'auth-msg success';
+                msg.textContent = '✅ Data Profil Berhasil Disimpan!';
+                
+                // Refresh Profile tab cache if needed, or just visual feedback
+            } catch (error) {
+                console.error(error);
+                msg.textContent = 'Gagal menyimpan data: ' + error.message;
+            }
+        };
+
+        window.changePassword = async function() {
+            const oldPass = document.getElementById('setOldPass').value.trim();
+            const newPass = document.getElementById('setNewPass').value.trim();
+            const confirmPass = document.getElementById('setConfirmPass').value.trim();
+            const msg = document.getElementById('setPassMsg');
+            const btn = document.getElementById('btnUpdatePass');
+
+            msg.className = 'auth-msg';
+            msg.textContent = '';
+
+            if (!oldPass || !newPass || !confirmPass) {
+                msg.textContent = 'Semua kolom wajib diisi.';
+                return;
+            }
+            if (newPass !== confirmPass) {
+                msg.textContent = 'Password baru dan konfirmasi tidak cocok.';
+                return;
+            }
+            if (newPass.length < 4) {
+                msg.textContent = 'Password minimal 4 karakter.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Memproses...';
+
+            try {
+                const authRef = doc(db, COLLECTION_AUTH, currentUser.id);
+                const authSnap = await getDoc(authRef);
+                
+                if (!authSnap.exists()) {
+                    throw new Error("Data akun tidak ditemukan.");
+                }
+
+                const currentData = authSnap.data();
+                if (currentData.password !== oldPass) {
+                    msg.textContent = 'Password lama salah!';
+                    btn.disabled = false;
+                    btn.textContent = 'GANTI PASSWORD';
+                    return;
+                }
+
+                await updateDoc(authRef, {
+                    password: newPass,
+                    updatedAt: new Date()
+                });
+
+                msg.className = 'auth-msg success';
+                msg.textContent = 'Password berhasil diubah!';
+
+                document.getElementById('setOldPass').value = '';
+                document.getElementById('setNewPass').value = '';
+                document.getElementById('setConfirmPass').value = '';
+
+                currentUser.password = newPass;
+
+            } catch (error) {
+                console.error(error);
+                msg.textContent = 'Terjadi kesalahan: ' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'GANTI PASSWORD';
+            }
+        };
+
         // Setup realtime listener
         function setupInfoBoardListener() {
             try {
@@ -1197,7 +1263,6 @@
                     
                     console.log('✅ Data received:', infoBoardData.length, 'items');
                     
-                    // Update tampilan jika sedang di tab info
                     const infoBoard = document.getElementById('infoBoard');
                     if (infoBoard) {
                         renderInfoBoard();
@@ -1216,7 +1281,6 @@
                 const stokisSnap = await getDocs(collection(db, COLLECTION_STOKIS));
                 globalData = window.processGlobalData(stokisSnap);
                 
-                // Setup listener untuk papan informasi
                 setupInfoBoardListener();
             } catch (error) {
                 document.getElementById('mainContent').innerHTML = `
