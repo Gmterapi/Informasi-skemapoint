@@ -250,6 +250,51 @@
             margin-top: 2px;
         }
 
+        /* --- BONUS TAB STYLES --- */
+        .bonus-summary {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #a7f3d0;
+        }
+        .bonus-total-val {
+            font-size: 28px;
+            font-weight: 800;
+            color: #059669;
+            margin: 5px 0;
+        }
+        .bonus-table-container {
+            padding: 0;
+            overflow-x: auto;
+        }
+        .bonus-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .bonus-table th {
+            text-align: left;
+            padding: 12px 16px;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .bonus-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--color-text);
+        }
+        .bonus-table tr:last-child td {
+            border-bottom: none;
+        }
+        .bonus-amount {
+            font-weight: 700;
+            color: #059669;
+            text-align: right;
+        }
+
         /* --- TREE VIEW --- */
         .tree-container {
             padding: 20px;
@@ -519,7 +564,7 @@
         }
 
         /* Desktop */
-        @media (min-width: 769px) {
+        @media (min-width:769px) {
             body { padding-bottom: 0; }
             .bottom-nav { display: none; }
             .desktop-nav {
@@ -596,6 +641,7 @@
     <div class="desktop-nav">
         <button class="desktop-btn active" id="btn-d-profile" onclick="window.switchTab('profile')">👤 Profil</button>
         <button class="desktop-btn" id="btn-d-member" onclick="window.switchTab('member')">⭐ Point Saya</button>
+        <button class="desktop-btn" id="btn-d-bonus" onclick="window.switchTab('bonus')">💰 Bonus</button>
         <button class="desktop-btn" id="btn-d-tree" onclick="window.switchTab('tree')">🌳 Jaringan</button>
         <button class="desktop-btn" id="btn-d-info" onclick="window.switchTab('info')">📢 Informasi</button>
         <button class="desktop-btn" id="btn-d-settings" onclick="window.switchTab('settings')">⚙️ Pengaturan</button>
@@ -617,6 +663,10 @@
         <button class="nav-item" id="btn-m-member" onclick="window.switchTab('member')">
             <span class="nav-icon">⭐</span>
             <span>Point</span>
+        </button>
+        <button class="nav-item" id="btn-m-bonus" onclick="window.switchTab('bonus')">
+            <span class="nav-icon">💰</span>
+            <span>Bonus</span>
         </button>
         <button class="nav-item" id="btn-m-tree" onclick="window.switchTab('tree')">
             <span class="nav-icon">🌳</span>
@@ -653,11 +703,63 @@
         const COLLECTION_AUTH = "memberAuth";
         const COLLECTION_PROFILES = "memberProfiles";
         const COLLECTION_INFO = "memberAnnouncements";
+        const COLLECTION_PRICES = "productPrices";
+        const COLLECTION_SYSTEM_CONFIG = "systemConfig";
 
         let globalData = null;
         let currentUser = null;
         let treeState = { nodes: [] };
         let infoBoardData = [];
+        let masterProductPrices = {};
+        
+        // INITIALISASI WINDOW.GLOBALBONUSFILTER AGAR BISA DIBACA SECARA GLOBAL
+        window.globalBonusFilter = { dateFrom: '', dateTo: '' }; 
+
+        // Load Master Prices
+        async function loadMasterPrices() {
+            try {
+                const docRef = doc(db, COLLECTION_PRICES, 'masterPrices');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    masterProductPrices = docSnap.data().prices || {};
+                } else {
+                    // Fallback prices
+                    masterProductPrices = {
+                        "PENDAN WULUNG": 1500000, "PHEROMONE": 50000, "A POWDER": 70000, "B POWDER": 70000, "C POWDER": 70000,
+                        "A KAPSUL": 100000, "B KAPSUL": 100000, "C KAPSUL": 100000, "GM MAX": 10000, "MADU GM": 10000,
+                        "TEH BMT": 20000, "TEH CELUP GM": 75000, "GODOGAN": 80000, "HB CORE": 57000, "HXA GM": 130000,
+                        "MAGIC RING": 50000, "GM OIL": 70000, "GMS2": 100000, "RPGM": 50000, "SPRAY": 20000,
+                        "GURAH THT": 40000, "GM MUSTIKA": 75000, "GM FRESH": 18000, "PENDAN HITAM 3D": 500000,
+                        "NEW GM PELING": 50000, "GM PACE": 100000, "SPOON KUNINGAN": 75000, "VITAMAX": 20000,
+                        "GM SKINCARE": 30000, "PHEROMONE BS": 60000
+                    };
+                }
+            } catch (error) {
+                console.error("Error loading master prices for bonus:", error);
+            }
+        }
+
+        function cleanProductName(code, name) {
+            // Helper to clean product name for price matching
+            if (name && !name.toUpperCase().includes('PROD')) return name;
+            if (!code) return name || "Unknown Product";
+            let result = code;
+            if (result.includes('_')) {
+                const parts = result.split('_');
+                if (parts.length >= 3) result = parts[parts.length - 1];
+            }
+            if (result.includes('-')) {
+                const parts = result.split('-');
+                if (parts.length >= 3 && parts[0].toUpperCase().includes('PROD')) {
+                    result = parts.slice(2).join('-');
+                }
+            }
+            result = result.replace(/PROD-?/gi, '');
+            result = result.replace(/[^a-zA-Z0-9 ]/g, ' ');
+            result = result.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+            result = result.trim();
+            return result || name || "Unknown Product";
+        }
 
         /* --- DATA PROCESSING --- */
         window.processGlobalData = function(snapshot) {
@@ -681,7 +783,10 @@
                             name: m.name,
                             points: 0,
                             upline: m.upline,
-                            stokisSources: []
+                            stokisSources: [],
+                            // NEW: Initialize Bonus
+                            bonusTotal: 0,
+                            bonusHistory: []
                         });
                     }
                     const globalMember = result.membersMap.get(mId);
@@ -696,8 +801,49 @@
 
                 sData.transactions?.forEach(t => {
                     sSalesPoints += parseFloat(t.totalPoints || 0);
-                });
 
+                    // NEW: BONUS CALCULATION LOGIC (7% from Unit Price)
+                    // FIX: Menggunakan window.globalBonusFilter
+                    const cleanProdName = cleanProductName(t.productCode, t.productName);
+                    const normalize = str => str.toUpperCase().replace(/\s/g, '');
+                    const normalizedInput = normalize(cleanProdName);
+                    let matchedKey = Object.keys(masterProductPrices).find(k => {
+                        const normalizedKey = normalize(k);
+                        return normalizedKey === normalizedInput || normalizedInput.includes(normalizedKey);
+                    });
+
+                    // LOGIC: Cek Filter Tanggal Admin dari Window Object
+                    let isDateMatch = true;
+                    if (window.globalBonusFilter.dateFrom || window.globalBonusFilter.dateTo) {
+                        const matchFrom = !window.globalBonusFilter.dateFrom || t.date >= window.globalBonusFilter.dateFrom;
+                        const matchTo = !window.globalBonusFilter.dateTo || t.date <= window.globalBonusFilter.dateTo;
+                        isDateMatch = matchFrom && matchTo;
+                    }
+
+                    // Hanya hitung bonus jika tanggal cocok dengan filter admin
+                    if (isDateMatch) {
+                        if (matchedKey) {
+                            const price = masterProductPrices[matchedKey];
+                            const qty = parseInt(t.qty) || 0;
+                            // LOGIC: 7% dari harga satuan per produk
+                            const bonusPerUnit = price * 0.07;
+                            const totalBonus = bonusPerUnit * qty;
+
+                            const member = result.membersMap.get(t.memberId);
+                            if (member) {
+                                member.bonusTotal += totalBonus;
+                                member.bonusHistory.push({
+                                    date: t.date,
+                                    productName: cleanProdName,
+                                    qty: qty,
+                                    unitPrice: price,
+                                    bonus: totalBonus
+                                });
+                            }
+                        }
+                    }
+                });
+                
                 result.stokisList.push({
                     id: sId,
                     name: sName,
@@ -827,6 +973,7 @@
 
             if (tabName === 'profile') renderProfile();
             if (tabName === 'member') renderMemberView();
+            if (tabName === 'bonus') renderBonusTab();
             if (tabName === 'tree') renderNetworkTree();
             if (tabName === 'info') renderInfoTab();
             if (tabName === 'settings') renderSettingsTab();
@@ -853,7 +1000,7 @@
             main.innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">📋 Profil Member</span>
+                        <span class="card-title">👤 Profil Member</span>
                     </div>
                     <div class="profile-container" id="profileContent">
                         <div style="text-align:center; padding:20px">Memuat data profil...</div>
@@ -923,7 +1070,75 @@
             document.getElementById('mainContent').innerHTML = html;
         }
 
-        /* 3. POHON JARINGAN (COLLAPSED BY DEFAULT) */
+        /* 3. TAB BONUS MEMBER (NEW - Responsive to Admin Filter, Text Updated) */
+        function renderBonusTab() {
+            if (!currentUser || !globalData) return;
+            const userData = globalData.membersMap.get(currentUser.id);
+            const displayName = userData ? userData.name : currentUser.name;
+            const displayBonus = userData && userData.bonusTotal ? userData.bonusTotal : 0;
+            const bonusHistory = userData && userData.bonusHistory ? userData.bonusHistory : [];
+
+            let html = `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">💰 Bonus Member</span>
+                    </div>
+                    <div class="bonus-summary">
+                        <div style="font-size:16px; color:#065f46; font-weight:600; margin-bottom:5px;">${displayName}</div>
+                        <div class="bonus-total-val">Rp ${displayBonus.toLocaleString('id-ID')}</div>
+                        <!-- DIUBAH: Total Bonus Terkumpul -> Bonus PVBV Bulanan -->
+                        <div style="font-size:14px; font-weight:700; color:#047857; font-weight:600; text-transform:uppercase;">Bonus PVBV Bulanan</div>
+                        
+                        <!-- BARIS INFO PERIODE TANGGAL DIHAPUS (DIREQUEST) -->
+                    </div>
+                    
+                    <div class="bonus-table-container">
+                        <table class="bonus-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Produk</th>
+                                    <th style="text-align:center;">Qty</th>
+                                    <th style="text-align:right;">Bonus (7%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            if (bonusHistory.length === 0) {
+                html += `
+                    <tr>
+                        <td colspan="4" style="text-align:center; padding:30px; color:#94a3b8;">
+                            Belum ada riwayat bonus.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                // Sort history by date descending
+                const sortedHistory = [...bonusHistory].sort((a, b) => b.date.localeCompare(a.date));
+                
+                sortedHistory.forEach(item => {
+                    html += `
+                        <tr>
+                            <td style="font-size:12px; color:#64748b;">${item.date}</td>
+                            <td style="font-weight:500;">${item.productName}</td>
+                            <td style="text-align:center;">${item.qty}</td>
+                            <td class="bonus-amount">Rp ${item.bonus.toLocaleString('id-ID')}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        /* 4. POHON JARINGAN (COLLAPSED BY DEFAULT) */
         function renderNetworkTree() {
             if (!currentUser || !globalData) return;
             const userData = globalData.membersMap.get(currentUser.id);
@@ -983,7 +1198,7 @@
             container.innerHTML = buildTreeHtml(treeState.nodes);
         }
 
-        /* 4. TAB INFORMASI */
+        /* 5. TAB INFORMASI */
         function renderInfoTab() {
             const main = document.getElementById('mainContent');
             main.innerHTML = `
@@ -1054,7 +1269,7 @@
             container.innerHTML = html;
         }
 
-        /* 5. TAB PENGATURAN (PROFILE & PASSWORD) */
+        /* 6. TAB PENGATURAN (PROFILE & PASSWORD) */
         async function renderSettingsTab() {
             if (!currentUser) return;
             const main = document.getElementById('mainContent');
@@ -1172,7 +1387,6 @@
                 msg.className = 'auth-msg success';
                 msg.textContent = '✅ Data Profil Berhasil Disimpan!';
                 
-                // Refresh Profile tab cache if needed, or just visual feedback
             } catch (error) {
                 console.error(error);
                 msg.textContent = 'Gagal menyimpan data: ' + error.message;
@@ -1250,8 +1464,6 @@
                 const infoRef = collection(db, COLLECTION_INFO);
                 const q = query(infoRef, orderBy('createdAt', 'desc'));
 
-                console.log('🔗 Listening to collection:', COLLECTION_INFO);
-
                 const unsubscribe = onSnapshot(q, (snapshot) => {
                     infoBoardData = [];
                     snapshot.forEach(doc => {
@@ -1260,8 +1472,6 @@
                             ...doc.data()
                         });
                     });
-                    
-                    console.log('✅ Data received:', infoBoardData.length, 'items');
                     
                     const infoBoard = document.getElementById('infoBoard');
                     if (infoBoard) {
@@ -1275,13 +1485,77 @@
             }
         }
 
-        /* --- INIT --- */
-        async function init() {
+        // NEW: Setup Bonus Filter Listener
+        function setupBonusFilterListener() {
+            try {
+                const ref = doc(db, COLLECTION_SYSTEM_CONFIG, 'bonusFilter');
+                
+                const unsubscribe = onSnapshot(ref, async (docSnap) => {
+                    if (docSnap.exists()) {
+                        window.globalBonusFilter = docSnap.data();
+                        
+                        console.log('🔗 Admin Bonus Filter Updated:', window.globalBonusFilter);
+                        console.log('🔄 Reloading Data to recalculate bonuses based on filter...');
+
+                        // --- LOGIKA BARU: RELOAD DATA ---
+                        // Penting: Panggil loadGlobalData ulang agar perhitungan bonus
+                        // sesuai filter baru dijalankan ulang.
+                        if (currentUser) {
+                           // Tampilkan loading di tab yang sedang aktif untuk UX
+                           const currentTabBtn = document.querySelector('.nav-item.active, .desktop-btn.active');
+                           if(currentTabBtn) {
+                               const main = document.getElementById('mainContent');
+                               main.innerHTML = `<div style="padding:20px; text-align:center;"><div class="spinner"></div><p style="color:#64748b; font-size:13px;">Memperbarui Bonus...</p></div>`;
+                           }
+
+                           await loadGlobalData();
+                        }
+
+                        // Render UI jika sedang di tab bonus
+                        const mobileBtn = document.getElementById('btn-m-bonus');
+                        const desktopBtn = document.getElementById('btn-d-bonus');
+                        
+                        if ((mobileBtn && mobileBtn.classList.contains('active')) || 
+                            (desktopBtn && desktopBtn.classList.contains('active'))) {
+                            renderBonusTab();
+                        }
+                    }
+                }, (error) => {
+                    console.error("Error listening to bonus filter:", error);
+                });
+            } catch (error) {
+                console.error("Error setting up bonus filter listener:", error);
+            }
+        }
+
+        // --- FUNGSI BARU: LOAD GLOBAL DATA ---
+        async function loadGlobalData() {
             try {
                 const stokisSnap = await getDocs(collection(db, COLLECTION_STOKIS));
                 globalData = window.processGlobalData(stokisSnap);
+            } catch (error) {
+                document.getElementById('mainContent').innerHTML = `
+                    <div class="card" style="padding:30px; text-align:center; color:#ef4444">
+                        <h3>❌ Error Koneksi</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        /* --- INIT --- */
+        async function init() {
+            try {
+                // 1. Load Prices
+                await loadMasterPrices();
+
+                // 2. Load Data & Process (Includes Bonus Calculation)
+                await loadGlobalData();
                 
+                // 3. Listeners
                 setupInfoBoardListener();
+                setupBonusFilterListener(); // NEW: Setup listener
+
             } catch (error) {
                 document.getElementById('mainContent').innerHTML = `
                     <div class="card" style="padding:30px; text-align:center; color:#ef4444">
