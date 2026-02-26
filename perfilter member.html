@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" "#0f172a">
+    <title>Member Area GMRJ - Metallic Edition</title>
+    <style>
+        /* --- METALLIC BLUE & GOLD THEME --- */
+        :root {
+            --primary: #D4AF37; /* Gold */
+            --primary-light: rgba(212, 175, 55, 0.15);
+            --primary-gradient: linear-gradient(135deg, #C5A059 0%, #F1C40F 50%, #C5A059 100%);
+            --primary-dark: #AA8C2C;
+            
+            --accent: #FFFFFF;
+            --accent-glow: rgba(212, 175, 55, 0.35);
+
+            /* Warna Dasar Biru Metalik */
+            --bg-deep: #0f172a; /* Deep Blue */
+            --bg-gradient: radial-gradient(circle at 50% 0%, #1e3a8a 0%, #0f172a 80%, #020617 100%);
+            
+            /* Warna Kotak (Pertahankan Gelap) */
+            --surface: rgba(15, 23, 42, 0.85);
+            --surface-solid: #1e293b;
+            --border-light: rgba(212, 175, 55, 0.25);
+            --border-color: rgba(255, 255, 255, 0.08);
+            
+            --text-main: #FFFFFF;
+            --text-muted: #94a3b8;
+            --text-light: #64748b;
+            
+            --success: #D4AF37;
+            --danger: #FF5252;
+
+            --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.5);
+            --shadow-xl: 0 20px 40px -5px rgba(0, 0, 0, 0.6);
+            --shadow-glow: 0 0 25px rgba(212, 175, 55, 0.15);
+            
+            --blur-strength: 20px;
+            --radius-lg: 24px;
+            --radius-md: 14px;
+            --radius-pill: 50px;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+        body {
+            background: var(--bg-deep); background-image: var(--bg-gradient);
+            color: var(--text-main); min-height: 100vh; padding-bottom: 100px;
+            overflow-x: hidden; -webkit-font-smoothing: antialiased;
+        }
+
+        /* Ambient Orbs - Blue Tinted */
+        body::before { content: ''; position: fixed; top: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(30, 58, 138, 0.15) 0%, transparent 70%); border-radius: 50%; filter: blur(60px); z-index: -1; animation: float 30s infinite alternate; }
+        body::after { content: ''; position: fixed; bottom: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%); border-radius: 50%; filter: blur(60px); z-index: -1; animation: float 25s infinite alternate-reverse; }
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, 30px); } }
+
+        .hidden { display: none !important; }
+
+        /* --- HEADER --- */
+        header { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); padding: 24px; text-align: center; position: sticky; top: 0; z-index: 50; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .app-title { font-size: 22px; font-weight: 800; letter-spacing: 1px; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; margin-bottom: 4px; }
+        .logout-btn { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 6px 20px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; cursor: pointer; margin-top: 10px; display: none; transition: all 0.3s; text-transform: uppercase; }
+        .logout-btn:hover { background: var(--primary); color: #000; box-shadow: var(--shadow-glow); }
+
+        /* --- AUTH OVERLAY --- */
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(30px); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
+        .auth-card { background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); width: 100%; max-width: 420px; padding: 50px 35px; border-radius: 32px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 30px 60px rgba(0,0,0,0.5), var(--shadow-glow); text-align: center; animation: slideUp 0.7s var(--ease-out); }
+        @keyframes slideUp { from { transform: translateY(50px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        .auth-logo { font-size: 48px; margin-bottom: 20px; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-card h2 { color: #fff; margin-bottom: 8px; font-weight: 800; font-size: 24px; }
+        .auth-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 35px; }
+        
+        .auth-input { width: 100%; padding: 16px 20px; margin: 12px 0; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); font-size: 15px; color: #fff; outline: none; transition: all 0.3s; font-weight: 500; }
+        .auth-input::placeholder { color: #666; }
+        .auth-input:focus { background: rgba(0,0,0,0.3); border-color: var(--primary); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1); }
+
+        .btn-auth { width: 100%; padding: 16px; background: var(--primary-gradient); color: #000; border: none; border-radius: var(--radius-md); font-weight: 800; font-size: 14px; margin-top: 24px; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 1px; }
+        .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3); filter: brightness(1.1); }
+        
+        .toggle-link { display: block; margin-top: 28px; font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600; }
+        .toggle-link:hover { color: #fff; text-decoration: underline; }
+        .auth-msg { color: var(--danger); font-size: 12px; margin-top: 16px; min-height: 20px; text-align: center; font-weight: 500; }
+        .auth-msg.success { color: var(--primary); }
+
+        main { padding: 0 16px; max-width: 800px; margin: 0 auto; position: relative; z-index: 10; padding-top: 24px; }
+        .card { background: var(--surface); backdrop-filter: blur(var(--blur-strength)); border-radius: var(--radius-lg); margin-bottom: 24px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-xl); transition: box-shadow 0.3s ease, transform 0.3s ease; }
+        .card:hover { box-shadow: var(--shadow-xl), var(--shadow-glow); transform: translateY(-2px); }
+        .card-header { padding: 20px 24px; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .card-title { font-size: 16px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 10px; }
+
+        .profile-container { padding: 28px; }
+        .profile-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .label { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; display: block; text-transform: uppercase; }
+        .value { font-size: 15px; color: var(--text-main); font-weight: 600; text-align: right; }
+        .readonly-value { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px; display: inline-block; min-width: 140px; text-align: right; color: var(--primary); font-family: 'Courier New', monospace; font-weight: 700; }
+
+        .result-summary { padding: 40px 24px; text-align: center; background: radial-gradient(circle at center, rgba(212, 175, 55, 0.03) 0%, transparent 70%); }
+        .result-name { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+        .result-id { font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: var(--radius-pill); margin-bottom: 30px; display: inline-block; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); }
+        .result-score-badge { width: 130px; height: 130px; background: #0f172a; border: 2px solid var(--primary); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto; color: var(--primary); box-shadow: var(--shadow-glow), inset 0 0 20px rgba(212, 175, 55, 0.05); position: relative; }
+        .result-score-val { font-size: 36px; font-weight: 800; line-height: 1; color: #fff; }
+        .result-score-label { font-size: 10px; text-transform: uppercase; font-weight: 800; margin-top: 6px; letter-spacing: 2px; color: var(--primary); }
+
+        .bonus-summary { background: linear-gradient(160deg, rgba(212, 175, 55, 0.08) 0%, rgba(0, 0, 0, 0) 100%); padding: 40px 24px; text-align: center; border-bottom: 1px solid var(--border-color); position: relative; overflow: hidden; }
+        .bonus-summary::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%); border-radius: 50%; filter: blur(20px); }
+        .bonus-total-val { font-size: 38px; font-weight: 800; color: #fff; margin: 12px 0; letter-spacing: -1px; position: relative; z-index: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .bonus-period-label { font-size: 12px; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+        
+        .filter-bar-container { padding: 20px 24px; background: rgba(0, 0, 0, 0.15); border-bottom: 1px solid var(--border-color); }
+        .filter-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .filter-label { font-size: 11px; color: var(--primary); text-transform: uppercase; font-weight: 700; width: 100%; margin-bottom: -5px; }
+        .filter-input-sm { padding: 10px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; font-size: 13px; background: rgba(0,0,0,0.3); color: #fff; transition: all 0.2s; flex: 1; min-width: 130px; }
+        .filter-input-sm:focus { border-color: var(--primary); outline: none; }
+        .filter-input-sm::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+        .btn-sm { padding: 10px 18px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-primary { background: var(--primary-gradient); color: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 12px rgba(212, 175, 55, 0.3); }
+
+        .bonus-table-container { padding: 0; overflow-x: auto; }
+        .bonus-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .bonus-table th { text-align: left; padding: 16px 24px; background: rgba(255, 255, 255, 0.02); color: var(--primary); font-weight: 700; border-bottom: 1px solid var(--border-color); white-space: nowrap; text-transform: uppercase; font-size: 10px; }
+        .bonus-table td { padding: 18px 24px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        .bonus-table tr:last-child td { border-bottom: none; }
+        .bonus-table tr:hover td { background: rgba(212, 175, 55, 0.02); }
+        .bonus-amount { font-weight: 700; color: var(--primary); text-align: right; font-family: 'Courier New', monospace; font-size: 14px; }
+
+        .tree-container { padding: 40px 20px; overflow: auto; background: rgba(0,0,0,0.1); min-height: 600px; text-align: center; display: block; width: 100%; }
+        .tree ul { padding-top: 20px; position: relative; transition: all 0.5s; display: flex; justify-content: center; width: max-content; margin: 0 auto; }
+        .tree li { text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; transition: all 0.5s; }
+        .tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 1px solid rgba(212, 175, 55, 0.2); width: 50%; height: 20px; }
+        .tree li::after { right: auto; left: 50%; border-left: 1px solid rgba(212, 175, 55, 0.2); }
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 1px solid rgba(212, 175, 55, 0.2); border-radius: 0 6px 0 0; }
+        .tree li:first-child::after { border-radius: 6px 0 0 0; }
+        .tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 1px solid rgba(212, 175, 55, 0.2); width: 0; height: 20px; }
+        .tree-node { border: 1px solid var(--border-color); background: rgba(30, 41, 59, 0.9); padding: 12px 18px; text-decoration: none; color: var(--text-main); font-size: 11px; display: inline-flex; flex-direction: column; align-items: center; border-radius: 16px; transition: all 0.3s; min-width: 120px; cursor: pointer; position: relative; z-index: 2; box-shadow: var(--shadow-sm); }
+        .tree-node:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: var(--shadow-md), var(--shadow-glow); }
+        .tree-node strong { display: block; font-size: 13px; color: #fff; margin-bottom: 4px; font-weight: 700; }
+        .tree-node small { color: var(--primary); font-size: 10px; font-weight: 600; text-transform: uppercase; }
+        .tree-node.highlight { border-color: var(--primary); background: rgba(15, 23, 42, 1); box-shadow: var(--shadow-glow); }
+
+        .info-board { padding: 24px; background: rgba(0,0,0,0.1); min-height: 200px; }
+        .info-item { background: rgba(30, 41, 59, 0.7); border-radius: 20px; padding: 24px; border-left: 4px solid var(--primary); box-shadow: var(--shadow-sm); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .info-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+        .info-item-title { font-size: 16px; font-weight: 800; color: #fff; }
+        .info-item-badge { padding: 6px 12px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; background: var(--primary-light); color: var(--primary); text-transform: uppercase; }
+        .info-item-date { font-size: 12px; color: var(--text-light); margin-top: 4px; font-weight: 500; }
+        .info-item-content { font-size: 14px; color: #cbd5e1; line-height: 1.7; white-space: pre-wrap; margin-bottom: 16px; }
+        .info-file-box { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 16px; margin-top: 12px; }
+        .btn-download { padding: 8px 16px; background: var(--primary-gradient); color: #000; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .info-empty { text-align: center; padding: 40px; color: var(--text-light); opacity: 0.8; font-style: italic; }
+
+        .settings-container { padding: 28px; }
+        .settings-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.6; }
+        .settings-divider { border: 0; border-top: 1px dashed rgba(255,255,255,0.1); margin: 30px 0; }
+        .btn-save { width: 100%; padding: 16px; background: transparent; color: var(--primary); border: 2px solid var(--primary); border-radius: var(--radius-md); font-weight: 700; font-size: 14px; margin-top: 20px; cursor: pointer; transition: all 0.3s var(--ease-out); }
+        .btn-save:hover { background: var(--primary); color: #000; box-shadow: var(--shadow-glow); }
+
+        .bottom-nav { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 480px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(25px); display: flex; justify-content: space-between; padding: 12px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow-xl), 0 0 30px rgba(0,0,0,0.5); z-index: 999; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #475569; font-size: 10px; font-weight: 700; background: none; border: none; cursor: pointer; flex: 1; transition: all 0.3s var(--ease-out); position: relative; }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; transition: transform 0.3s, text-shadow 0.3s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.15); text-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
+
+        @media (min-width: 769px) { body { padding-bottom: 0; padding-top: 0; background: #0f172a; } .bottom-nav { display: none; } .desktop-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; position: relative; z-index: 20; padding: 0 20px; flex-wrap: wrap; margin-top: 30px; } .desktop-btn { padding: 12px 30px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.1); background: rgba(30,41,59,0.8); color: #94a3b8; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.3s var(--ease-out); text-transform: uppercase; box-shadow: var(--shadow-sm); } .desktop-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); } .desktop-btn.active { background: var(--primary-gradient); color: #000; border-color: transparent; box-shadow: 0 10px 20px rgba(0,0,0,0.4); font-weight: 800; } }
+        @media (max-width: 768px) { .desktop-nav { display: none; } }
+
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(255, 255, 255, 0.1); border-radius: 50%; border-top-color: var(--primary); animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="authOverlay">
+        <div id="loginCard" class="auth-card">
+            <div class="auth-logo">🔐</div>
+            <h2>Login Member</h2>
+            <p>Selamat datang kembali. Silakan masuk.</p>
+            <input type="text" id="loginId" class="auth-input" placeholder="ID Member">
+            <input type="password" id="loginPass" class="auth-input" placeholder="Password">
+            <button class="btn-auth" onclick="window.attemptLogin()">MASUK</button>
+            <div id="loginMsg" class="auth-msg"></div>
+            <span class="toggle-link" onclick="window.toggleAuthMode()">Belum punya akun? Daftar di sini</span>
+        </div>
+        <div id="registerCard" class="auth-card hidden">
+            <div class="auth-logo">📝</div>
+            <h2>Registrasi Member</h2>
+            <p>Buat akun baru untuk mengakses Member Area.</p>
+            <input type="text" id="regId" class="auth-input" placeholder="ID Member">
+            <input type="password" id="regPass" class="auth-input" placeholder="Buat Password">
+            <input type="password" id="regPassConfirm" class="auth-input" placeholder="Konfirmasi Password">
+            <button class="btn-auth" onclick="window.attemptRegister()">DAFTAR</button>
+            <div id="regMsg" class="auth-msg"></div>
+            <span class="toggle-link" onclick="window.toggleAuthMode()">Sudah punya akun? Masuk di sini</span>
+        </div>
+    </div>
+    
+    <header>
+        <div class="app-title">Member Area GMRJ</div>
+        <button id="btnLogout" class="logout-btn" onclick="window.logout()">Keluar</button>
+    </header>
+
+    <div class="desktop-nav">
+        <button class="desktop-btn active" id="btn-d-profile" onclick="window.switchTab('profile')">👤 Profil</button>
+        <button class="desktop-btn" id="btn-d-member" onclick="window.switchTab('member')">⭐ Point Saya</button>
+        <button class="desktop-btn" id="btn-d-bonus" onclick="window.switchTab('bonus')">💰 Bonus</button>
+        <button class="desktop-btn" id="btn-d-tree" onclick="window.switchTab('tree')">🌳 Jaringan</button>
+        <button class="desktop-btn" id="btn-d-info" onclick="window.switchTab('info')">📢 Informasi</button>
+        <button class="desktop-btn" id="btn-d-settings" onclick="window.switchTab('settings')">⚙️ Pengaturan</button>
+    </div>
+
+    <main id="mainContent"><div class="loading-overlay" style="text-align: center; padding: 40px;"><div class="spinner"></div><p style="color: var(--text-muted); font-size: 14px;">Memuat data...</p></div></main>
+    
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="btn-m-profile" onclick="window.switchTab('profile')"><span class="nav-icon">👤</span><span>Profil</span></button>
+        <button class="nav-item" id="btn-m-member" onclick="window.switchTab('member')"><span class="nav-icon">⭐</span><span>Point</span></button>
+        <button class="nav-item" id="btn-m-bonus" onclick="window.switchTab('bonus')"><span class="nav-icon">💰</span><span>Bonus</span></button>
+        <button class="nav-item" id="btn-m-tree" onclick="window.switchTab('tree')"><span class="nav-icon">🌳</span><span>Jaringan</span></button>
+        <button class="nav-item" id="btn-m-info" onclick="window.switchTab('info')"><span class="nav-icon">📢</span><span>Info</span></button>
+        <button class="nav-item" id="btn-m-settings" onclick="window.switchTab('settings')"><span class="nav-icon">⚙️</span><span>Pengaturan</span></button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7i0bGhjKHZ788Ir7xTDFM0LXAevnWKsI",
+            authDomain: "sistem-stokis-gmrj.firebaseapp.com",
+            projectId: "sistem-stokis-gmrj",
+            storageBucket: "sistem-stokis-gmrj.firebasestorage.app",
+            messagingSenderId: "288883517168",
+            appId: "1:288883517168:web:d5cdd864aa944205df8435",
+            measurementId: "G-12KELDXJ1J"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const COLLECTION_STOKIS = "stokisDatas";
+        const COLLECTION_AUTH = "memberAuth";
+        const COLLECTION_PROFILES = "memberProfiles";
+        const COLLECTION_INFO = "memberAnnouncements";
+        const COLLECTION_PRICES = "productPrices";
+
+        let globalData = null;
+        let currentUser = null;
+        let treeState = { nodes: [] };
+        let infoBoardData = [];
+        let masterProductPrices = {};
+        
+        window.currentMemberFilter = { month: '', dateFrom: '', dateTo: '' }; 
+
+        async function loadMasterPrices() {
+            try {
+                const docRef = doc(db, COLLECTION_PRICES, 'masterPrices');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    masterProductPrices = docSnap.data().prices || {};
+                } else {
+                    masterProductPrices = { "PENDAN WULUNG": 1500000, "PHEROMONE": 50000, "A POWDER": 70000, "B POWDER": 70000, "C POWDER": 70000, "A KAPSUL": 100000, "B KAPSUL": 100000, "C KAPSUL": 100000, "GM MAX": 10000, "MADU GM": 10000, "TEH BMT": 20000, "TEH CELUP GM": 75000, "GODOGAN": 80000, "HB CORE": 57000, "HXA GM": 130000, "MAGIC RING": 50000, "GM OIL": 70000, "GMS2": 100000, "RPGM": 50000, "SPRAY": 20000, "GURAH THT": 40000, "GM MUSTIKA": 75000, "GM FRESH": 18000, "PENDAN HITAM 3D": 500000, "NEW GM PELING": 50000, "GM PACE": 100000, "SPOON KUNINGAN": 75000, "VITAMAX": 20000, "GM SKINCARE": 30000, "PHEROMONE BS": 60000 };
+                }
+            } catch (error) { console.error("Error loading master prices:", error); }
+        }
+
+        function cleanProductName(code, name) {
+            if (name && !name.toUpperCase().includes('PROD')) return name;
+            if (!code) return name || "Unknown Product";
+            let result = code;
+            if (result.includes('_')) { const parts = result.split('_'); if (parts.length >= 3) result = parts[parts.length - 1]; }
+            if (result.includes('-')) { const parts = result.split('-'); if (parts.length >= 3 && parts[0].toUpperCase().includes('PROD')) { result = parts.slice(2).join('-'); } }
+            result = result.replace(/PROD-?/gi, '');
+            result = result.replace(/[^a-zA-Z0-9 ]/g, ' ');
+            result = result.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+            return result.trim() || name || "Unknown Product";
+        }
+
+        window.processGlobalData = function(snapshot) {
+            const result = { stokisList: [], membersMap: new Map() };
+            snapshot.forEach(doc => {
+                const sId = doc.id;
+                const sData = doc.data();
+                const sName = sData.profile?.namaStokis || sId;
+                let sPoints = 0; let sMemberCount = sData.members?.length || 0; let sSalesPoints = 0;
+
+                sData.members?.forEach(m => {
+                    const mId = m.id; const mPoints = m.totalPoints || 0; sPoints += mPoints;
+                    if (!result.membersMap.has(mId)) { result.membersMap.set(mId, { id: mId, name: m.name, points: 0, upline: m.upline, stokisSources: [], bonusTotal: 0, bonusHistory: [] }); }
+                    const globalMember = result.membersMap.get(mId);
+                    globalMember.points += mPoints;
+                    if (!globalMember.stokisSources.includes(sName)) globalMember.stokisSources.push(sName);
+                    if (!globalMember.name) globalMember.name = "N/A"; globalMember.name = m.name;
+                    if (m.upline) globalMember.upline = m.upline;
+                });
+
+                sData.transactions?.forEach(t => {
+                    sSalesPoints += parseFloat(t.totalPoints || 0);
+                    const cleanProdName = cleanProductName(t.productCode, t.productName);
+                    const normalize = str => str.toUpperCase().replace(/\s/g, '');
+                    const normalizedInput = normalize(cleanProdName);
+                    
+                    let matchedKey = Object.keys(masterProductPrices).find(k => {
+                        const normalizedKey = normalize(k);
+                        return normalizedKey === normalizedInput || normalizedInput.includes(normalizedKey) || normalizedKey.includes(normalizedInput);
+                    });
+
+                    if (matchedKey) {
+                        const price = masterProductPrices[matchedKey];
+                        const qty = parseInt(t.qty) || 0;
+                        const bonusPerUnit = price * 0.07;
+                        const totalBonus = bonusPerUnit * qty;
+
+                        let member = result.membersMap.get(t.memberId);
+                        if (!member) {
+                            const foundEntry = Array.from(result.membersMap.entries()).find(([key, val]) => key.trim().toLowerCase() === String(t.memberId).trim().toLowerCase());
+                            if (foundEntry) member = foundEntry[1];
+                        }
+
+                        if (!member) {
+                             member = { id: t.memberId, name: t.memberName || "Unknown", points: 0, upline: null, stokisSources: [sName], bonusTotal: 0, bonusHistory: [] };
+                             result.membersMap.set(t.memberId, member);
+                        }
+
+                        member.bonusTotal += totalBonus;
+                        member.bonusHistory.push({ date: t.date, productName: cleanProdName, qty: qty, unitPrice: price, bonus: totalBonus });
+                    }
+                });
+                
+                result.stokisList.push({ id: sId, name: sName, totalPoints: sPoints, salesPoints: sSalesPoints, memberCount: sMemberCount });
+            });
+            return result;
+        };
+
+        window.toggleAuthMode = function() { const loginCard = document.getElementById('loginCard'); const regCard = document.getElementById('registerCard'); document.getElementById('loginMsg').textContent = ''; document.getElementById('regMsg').textContent = ''; if (loginCard.classList.contains('hidden')) { loginCard.classList.remove('hidden'); regCard.classList.add('hidden'); } else { loginCard.classList.add('hidden'); regCard.classList.remove('hidden'); } };
+        window.attemptRegister = async function() { const idInput = document.getElementById('regId').value.trim(); const passInput = document.getElementById('regPass').value.trim(); const confirmPass = document.getElementById('regPassConfirm').value.trim(); const msg = document.getElementById('regMsg'); msg.className = 'auth-msg'; msg.textContent = ''; if (!idInput || !passInput) { msg.textContent = 'Mohon isi ID dan Password.'; return; } if (passInput !== confirmPass) { msg.textContent = 'Konfirmasi password tidak cocok.'; return; } try { const authRef = doc(db, COLLECTION_AUTH, idInput); const authSnap = await getDoc(authRef); if (authSnap.exists()) { msg.textContent = 'ID Member ini sudah terdaftar. Silakan Login.'; return; } if (!globalData || !globalData.membersMap.has(idInput)) { msg.textContent = 'ID Member tidak ditemukan di database sistem. Hubungi Admin.'; return; } await setDoc(authRef, { password: passInput }); msg.className = 'auth-msg success'; msg.textContent = 'Registrasi Berhasil! Silakan Login.'; document.getElementById('regId').value = ''; document.getElementById('regPass').value = ''; document.getElementById('regPassConfirm').value = ''; setTimeout(() => window.toggleAuthMode(), 1500); } catch (error) { console.error(error); msg.textContent = 'Gagal registrasi: ' + error.message; } };
+        window.attemptLogin = async function() { const idInput = document.getElementById('loginId').value.trim(); const passInput = document.getElementById('loginPass').value.trim(); const msg = document.getElementById('loginMsg'); msg.className = 'auth-msg'; msg.textContent = ''; if (!idInput || !passInput) { msg.textContent = 'Mohon isi ID dan Password.'; return; } try { const docRef = doc(db, COLLECTION_AUTH, idInput); const docSnap = await getDoc(docRef); if (docSnap.exists()) { const data = docSnap.data(); if (data.password === passInput) { currentUser = { id: idInput, ...data }; if (globalData && globalData.membersMap.has(idInput)) { currentUser.name = globalData.membersMap.get(idInput).name; } document.getElementById('authOverlay').style.display = 'none'; document.getElementById('btnLogout').style.display = 'inline-block'; window.switchTab('profile'); } else { msg.textContent = 'Password salah!'; } } else { msg.textContent = 'ID Member tidak terdaftar. Silakan Daftar.'; } } catch (error) { console.error(error); msg.textContent = 'Terjadi kesalahan koneksi.'; } };
+        window.logout = function() { currentUser = null; document.getElementById('authOverlay').style.display = 'flex'; document.getElementById('loginId').value = ''; document.getElementById('loginPass').value = ''; document.getElementById('btnLogout').style.display = 'none'; window.toggleAuthMode(); };
+
+        window.switchTab = function(tabName) { document.querySelectorAll('.nav-item, .desktop-btn').forEach(btn => btn.classList.remove('active')); const mobileBtn = document.getElementById('btn-m-' + tabName); const desktopBtn = document.getElementById('btn-d-' + tabName); if(mobileBtn) mobileBtn.classList.add('active'); if(desktopBtn) desktopBtn.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); if (tabName === 'profile') renderProfile(); if (tabName === 'member') renderMemberView(); if (tabName === 'bonus') renderBonusTab(); if (tabName === 'tree') renderNetworkTree(); if (tabName === 'info') renderInfoTab(); if (tabName === 'settings') renderSettingsTab(); };
+        window.toggleNode = function(id) { function traverse(list) { for (const n of list) { if (n.id === id) { n.expanded = !n.expanded; return true; } if (n.children && traverse(n.children)) return true; } } traverse(treeState.nodes); renderTreeHTML(); };
+
+        async function renderProfile() { if (!currentUser || !globalData) return; const main = document.getElementById('mainContent'); main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">👤 Profil Member</span></div><div class="profile-container" id="profileContent"><div style="text-align:center; padding:20px">Memuat data profil...</div></div></div>`; try { const profileRef = doc(db, COLLECTION_PROFILES, currentUser.id); const profileSnap = await getDoc(profileRef); let profileData = { level: 'Basic', phone: '', address: '', coords: '' }; if (profileSnap.exists()) { profileData = profileSnap.data(); if (typeof profileData.coords === 'undefined') profileData.coords = ''; } const container = document.getElementById('profileContent'); let html = ''; html += `<div class="profile-row"><span class="label">Nama Member</span><span class="value readonly-value">${currentUser.name}</span></div>`; html += `<div class="profile-row"><span class="label">ID Member</span><span class="value readonly-value">${currentUser.id}</span></div>`; html += '<hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:20px 0">'; html += `<div class="profile-row"><span class="label">Koordinat</span><span class="value">${profileData.coords || '-'}</span></div>`; html += `<div class="profile-row"><span class="label">Level Keahlian</span><span class="value">${profileData.level}</span></div>`; html += `<div class="profile-row"><span class="label">No HP Member</span><span class="value">${profileData.phone || '-'}</span></div>`; html += `<div class="profile-row"><span class="label">Alamat Member</span><span class="value">${profileData.address || '-'}</span></div>`; html += `<div style="text-align:center; margin-top:24px; padding: 16px; background: rgba(212, 175, 55, 0.05); border-radius: 12px; font-size:12px; color: var(--primary); font-weight: 500;">Untuk mengubah data profil, silakan ke menu <strong>Pengaturan</strong>.</div>`; container.innerHTML = html; } catch (error) { console.error("Error loading profile:", error); document.getElementById('profileContent').innerHTML = '<p style="color:var(--danger); text-align:center">Gagal memuat profil.</p>'; } }
+        function renderMemberView() { if (!currentUser || !globalData) return; const userData = globalData.membersMap.get(currentUser.id); const displayName = userData ? userData.name : currentUser.name; const displayPoints = userData ? userData.points : 0; let html = `<div class="card"><div class="card-header"><span class="card-title">⭐ Point Member Saya</span></div><div class="result-summary"><div class="result-name">${displayName}</div><div class="result-id">${currentUser.id}</div><div class="result-score-badge"><div class="result-score-content"><div class="result-score-val">${displayPoints.toFixed(2)}</div><div class="result-score-label">Total Point</div></div></div></div></div>`; document.getElementById('mainContent').innerHTML = html; }
+
+        function renderBonusTab() {
+            if (!currentUser || !globalData) return;
+            const userData = globalData.membersMap.get(currentUser.id);
+            const displayName = userData ? userData.name : currentUser.name;
+            const allBonusHistory = userData && userData.bonusHistory ? userData.bonusHistory : [];
+            const totalBonusAllTime = userData && userData.bonusTotal ? userData.bonusTotal : 0;
+
+            let filteredHistory = allBonusHistory;
+            let displayTotal = totalBonusAllTime;
+            let periodLabel = "Total Keseluruhan";
+
+            if (window.currentMemberFilter.dateFrom && window.currentMemberFilter.dateTo) {
+                const start = new Date(window.currentMemberFilter.dateFrom);
+                const end = new Date(window.currentMemberFilter.dateTo);
+                end.setHours(23, 59, 59, 999); 
+                
+                filteredHistory = allBonusHistory.filter(t => {
+                    const d = new Date(t.date);
+                    return d >= start && d <= end;
+                });
+                displayTotal = filteredHistory.reduce((sum, item) => sum + item.bonus, 0);
+                periodLabel = `${window.currentMemberFilter.dateFrom} s/d ${window.currentMemberFilter.dateTo}`;
+            } else if (window.currentMemberFilter.month) {
+                const p = window.currentMemberFilter.month;
+                filteredHistory = allBonusHistory.filter(t => t.date.startsWith(p));
+                displayTotal = filteredHistory.reduce((sum, item) => sum + item.bonus, 0);
+                
+                const dateObj = new Date(p + "-02");
+                periodLabel = dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            }
+
+            let html = `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">💰 Riwayat Bonus</span>
+                    </div>
+                    <div class="bonus-summary">
+                        <div style="font-size:14px; color:var(--text-muted); font-weight:600; margin-bottom:2px; position:relative; z-index:1;">${displayName}</div>
+                        <div class="bonus-total-val">Rp ${displayTotal.toLocaleString('id-ID')}</div>
+                        <div class="bonus-period-label">${periodLabel}</div>
+                    </div>
+                    
+                    <div class="filter-bar-container">
+                        <div class="filter-row" style="margin-bottom: 15px;">
+                            <span class="filter-label">Filter Tanggal Spesifik</span>
+                        </div>
+                        <div class="filter-row">
+                            <input type="date" id="inputDateFrom" class="filter-input-sm" value="${window.currentMemberFilter.dateFrom}" title="Dari Tanggal">
+                            <span style="color:var(--text-muted)">-</span>
+                            <input type="date" id="inputDateTo" class="filter-input-sm" value="${window.currentMemberFilter.dateTo}" title="Sampai Tanggal">
+                        </div>
+                        
+                        <div class="filter-row" style="margin-top: 15px; margin-bottom: 5px;">
+                             <span class="filter-label">Atau Cepat Bulanan</span>
+                        </div>
+                        <div class="filter-row">
+                            <input type="month" id="inputMonthFilter" class="filter-input-sm" value="${window.currentMemberFilter.month}" style="flex:2">
+                            <button class="btn-sm btn-primary" onclick="window.applyMemberBonusFilter()" style="flex:1">Filter</button>
+                            <button class="btn-sm btn-secondary" onclick="window.resetMemberBonusFilter()" style="flex:1">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="bonus-table-container">
+                        <table class="bonus-table">
+                            <thead><tr><th>Tanggal</th><th>Produk</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Bonus</th></tr></thead>
+                            <tbody>
+            `;
+
+            if (filteredHistory.length === 0) {
+                html += `<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-light); font-style:italic;">Tidak ada data bonus untuk periode ini.</td></tr>`;
+            } else {
+                const sortedHistory = [...filteredHistory].sort((a, b) => b.date.localeCompare(a.date));
+                sortedHistory.forEach(item => {
+                    html += `<tr><td style="font-size:12px; color:var(--text-muted); font-weight:500;">${item.date}</td><td style="font-weight:600;">${item.productName}</td><td style="text-align:center; font-weight:700;">${item.qty}</td><td class="bonus-amount">Rp ${item.bonus.toLocaleString('id-ID')}</td></tr>`;
+                });
+            }
+
+            html += `</tbody></table></div></div>`;
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        window.applyMemberBonusFilter = function() {
+            const dFrom = document.getElementById('inputDateFrom').value;
+            const dTo = document.getElementById('inputDateTo').value;
+            const month = document.getElementById('inputMonthFilter').value;
+
+            window.currentMemberFilter.dateFrom = dFrom;
+            window.currentMemberFilter.dateTo = dTo;
+            window.currentMemberFilter.month = month;
+            
+            if(dFrom && dTo) {
+                 document.getElementById('inputMonthFilter').value = ''; 
+                 window.currentMemberFilter.month = '';
+            }
+
+            renderBonusTab();
+        };
+
+        window.resetMemberBonusFilter = function() {
+            window.currentMemberFilter = { month: '', dateFrom: '', dateTo: '' };
+            renderBonusTab();
+        };
+
+        function renderNetworkTree() { if (!currentUser || !globalData) return; const userData = globalData.membersMap.get(currentUser.id); const buildSubTree = (rootMember) => { const allMembers = Array.from(globalData.membersMap.values()); const children = allMembers.filter(m => m.upline === rootMember.id); return { ...rootMember, children: children.map(child => buildSubTree(child)), expanded: false, highlight: true }; }; const rootNode = buildSubTree(userData); treeState.nodes = [rootNode]; let html = `<div class="card"><div class="card-header"><span class="card-title">🌳 Jaringan Saya</span></div><div class="tree-container tree" id="treeContainer"></div></div>`; document.getElementById('mainContent').innerHTML = html; renderTreeHTML(); }
+        function renderTreeHTML() { const container = document.getElementById('treeContainer'); if (!container || treeState.nodes.length === 0) return; const buildTreeHtml = (nodeList) => { if (!nodeList || nodeList.length === 0) return ''; return '<ul>' + nodeList.map(node => { const hasChildren = node.children && node.children.length > 0; const isExpanded = node.expanded; let childrenHtml = ''; if (hasChildren && isExpanded) { childrenHtml = buildTreeHtml(node.children); } const highlightClass = node.highlight ? 'highlight' : ''; return `<li><div class="tree-node ${highlightClass}" onclick="window.toggleNode('${node.id.replace(/'/g, "\\'")}')">${hasChildren ? `<span style="color:var(--primary); margin-right:6px; font-size:12px;">${isExpanded ? '▼' : '▶'}</span>` : '<span style="width:12px; display:inline-block"></span>'}<strong>${node.name}</strong><small>${parseFloat(node.points).toFixed(0)} pts</small></div>${childrenHtml}</li>`; }).join('') + '</ul>'; }; container.innerHTML = buildTreeHtml(treeState.nodes); }
+
+        function renderInfoTab() { const main = document.getElementById('mainContent'); main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">📢 Papan Informasi</span></div><div class="info-board" id="infoBoard"><div class="info-empty">Memuat informasi...</div></div></div>`; renderInfoBoard(); }
+        function renderInfoBoard() { const container = document.getElementById('infoBoard'); if (!container) return; if (infoBoardData.length === 0) { container.innerHTML = '<div class="info-empty">Belum ada informasi yang dipublikasikan.</div>'; return; } const sortedData = [...infoBoardData].sort((a, b) => { const dateA = a.createdAt ? new Date(a.createdAt.toDate()) : new Date(0); const dateB = b.createdAt ? new Date(b.createdAt.toDate()) : new Date(0); return dateB - dateA; }); let html = '<div class="info-items-list">'; sortedData.forEach(item => { const formattedDate = item.createdAt ? new Date(item.createdAt.toDate()).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; html += `<div class="info-item"><div class="info-item-header"><div><div class="info-item-title">${item.title || 'Tanpa Judul'}</div><div class="info-item-date">📅 ${formattedDate}</div></div><span class="info-item-badge">Semua Member</span></div><div class="info-item-content">${item.content || ''}</div>`; if (item.fileUrl && item.fileName) { const fileTypeDisplay = item.fileType ? item.fileType.toUpperCase() : 'FILE'; html += `<div class="info-file-box"><div class="info-file-info"><span class="info-file-icon">📎</span><div><div class="info-file-name"> ${item.fileName} <span class="info-file-type">${fileTypeDisplay}</span></div><div style="font-size:11px; color:var(--text-muted); font-weight:500;">Klik tombol untuk download</div></div></div><a href="${item.fileUrl}" target="_blank" class="btn-download">Download</a></div>`; } html += `</div>`; }); html += '</div>'; container.innerHTML = html; }
+
+        async function renderSettingsTab() { if (!currentUser) return; const main = document.getElementById('mainContent'); let profileData = { level: 'Basic', phone: '', address: '', coords: '' }; try { const profileRef = doc(db, COLLECTION_PROFILES, currentUser.id); const profileSnap = await getDoc(profileRef); if (profileSnap.exists()) { profileData = profileSnap.data(); if (typeof profileData.coords === 'undefined') profileData.coords = ''; } } catch (error) { console.error("Error fetching profile for settings:", error); } main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">👤 Ubah Data Profil</span></div><div class="settings-container"><p class="settings-desc">Perbarui informasi diri Anda di bawah ini.</p><div style="margin-bottom: 16px;"><label class="label">Koordinat</label><input type="text" id="setCoords" class="auth-input" value="${profileData.coords || ''}" placeholder="Contoh: -6.200000, 106.816666"></div><div style="margin-bottom: 16px;"><label class="label">Level Keahlian</label><select id="setLevel" class="auth-input"><option value="Basic" ${profileData.level === 'Basic' ? 'selected' : ''}>Basic</option><option value="Advance" ${profileData.level === 'Advance' ? 'selected' : ''}>Advance</option><option value="Professional" ${profileData.level === 'Professional' ? 'selected' : ''}>Professional</option><option value="Master" ${profileData.level === 'Master' ? 'selected' : ''}>Master</option><option value="Instruktur" ${profileData.level === 'Instruktur' ? 'selected' : ''}>Instruktur</option></select></div><div style="margin-bottom: 16px;"><label class="label">No HP Member</label><input type="tel" id="setPhone" class="auth-input" value="${profileData.phone || ''}" placeholder="0812..."></div><div style="margin-bottom: 24px;"><label class="label">Alamat Member</label><textarea id="setAddress" class="auth-input" style="min-height:80px; resize:vertical" placeholder="Alamat lengkap...">${profileData.address || ''}</textarea></div><div id="setProfileMsg" class="auth-msg" style="text-align:center; margin-bottom:16px"></div><button class="btn-save" onclick="window.saveSettingsProfile()">SIMPAN PERUBAHAN PROFIL</button></div></div><div class="settings-divider"></div><div class="card"><div class="card-header"><span class="card-title">🔒 Keamanan Akun</span></div><div class="settings-container"><p class="settings-desc">Ganti password untuk keamanan akun Anda.</p><div style="margin-bottom: 16px;"><label class="label">Password Lama</label><input type="password" id="setOldPass" class="auth-input" placeholder="Masukkan password saat ini"></div><div style="margin-bottom: 16px;"><label class="label">Password Baru</label><input type="password" id="setNewPass" class="auth-input" placeholder="Masukkan password baru"></div><div style="margin-bottom: 24px;"><label class="label">Konfirmasi Password Baru</label><input type="password" id="setConfirmPass" class="auth-input" placeholder="Ulangi password baru"></div><div id="setPassMsg" class="auth-msg" style="text-align:center; margin-bottom:16px"></div><button id="btnUpdatePass" class="btn-save" onclick="window.changePassword()">GANTI PASSWORD</button></div></div>`; }
+
+        window.saveSettingsProfile = async function() { const coords = document.getElementById('setCoords').value; const level = document.getElementById('setLevel').value; const phone = document.getElementById('setPhone').value; const address = document.getElementById('setAddress').value; const msg = document.getElementById('setProfileMsg'); msg.className = 'auth-msg'; msg.textContent = ''; try { await setDoc(doc(db, COLLECTION_PROFILES, currentUser.id), { coords: coords, level: level, phone: phone, address: address, updatedAt: new Date() }, { merge: true }); msg.className = 'auth-msg success'; msg.textContent = '✅ Data Profil Berhasil Disimpan!'; } catch (error) { console.error(error); msg.textContent = 'Gagal menyimpan data: ' + error.message; } };
+        window.changePassword = async function() { const oldPass = document.getElementById('setOldPass').value.trim(); const newPass = document.getElementById('setNewPass').value.trim(); const confirmPass = document.getElementById('setConfirmPass').value.trim(); const msg = document.getElementById('setPassMsg'); const btn = document.getElementById('btnUpdatePass'); msg.className = 'auth-msg'; msg.textContent = ''; if (!oldPass || !newPass || !confirmPass) { msg.textContent = 'Semua kolom wajib diisi.'; return; } if (newPass !== confirmPass) { msg.textContent = 'Password baru dan konfirmasi tidak cocok.'; return; } if (newPass.length < 4) { msg.textContent = 'Password minimal 4 karakter.'; return; } btn.disabled = true; btn.textContent = 'Memproses...'; try { const authRef = doc(db, COLLECTION_AUTH, currentUser.id); const authSnap = await getDoc(authRef); if (!authSnap.exists()) { throw new Error("Data akun tidak ditemukan."); } const currentData = authSnap.data(); if (currentData.password !== oldPass) { msg.textContent = 'Password lama salah!'; btn.disabled = false; btn.textContent = 'GANTI PASSWORD'; return; } await updateDoc(authRef, { password: newPass, updatedAt: new Date() }); msg.className = 'auth-msg success'; msg.textContent = 'Password berhasil diubah!'; document.getElementById('setOldPass').value = ''; document.getElementById('setNewPass').value = ''; document.getElementById('setConfirmPass').value = ''; currentUser.password = newPass; } catch (error) { console.error(error); msg.textContent = 'Terjadi kesalahan: ' + error.message; } finally { btn.disabled = false; btn.textContent = 'GANTI PASSWORD'; } };
+
+        function setupInfoBoardListener() { try { const infoRef = collection(db, COLLECTION_INFO); const q = query(infoRef, orderBy('createdAt', 'desc')); onSnapshot(q, (snapshot) => { infoBoardData = []; snapshot.forEach(doc => { infoBoardData.push({ id: doc.id, ...doc.data() }); }); const infoBoard = document.getElementById('infoBoard'); if (infoBoard) renderInfoBoard(); }, (error) => { console.error("❌ Error listening:", error); }); } catch (error) { console.error("❌ Setup error:", error); } }
+
+        async function loadGlobalData() { try { const stokisSnap = await getDocs(collection(db, COLLECTION_STOKIS)); globalData = window.processGlobalData(stokisSnap); } catch (error) { document.getElementById('mainContent').innerHTML = `<div class="card" style="padding:30px; text-align:center; color:var(--danger)"><h3>❌ Error Koneksi</h3><p>${error.message}</p></div>`; } }
+
+        async function init() { try { await loadMasterPrices(); await loadGlobalData(); setupInfoBoardListener(); } catch (error) { document.getElementById('mainContent').innerHTML = `<div class="card" style="padding:30px; text-align:center; color:var(--danger)"><h3>❌ Error Koneksi</h3><p>${error.message}</p></div>`; } }
+
+        init(); 
+    </script>
+</body>
+</html>
